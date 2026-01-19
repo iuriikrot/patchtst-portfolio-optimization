@@ -399,12 +399,13 @@ def aggregate_forecast_metrics(forecasts_df):
 # ## 4. Baseline 1: Историческое среднее
 
 # %%
-def run_backtest_baseline1(returns, train_window, test_window, rf, collect_forecasts=True):
+def run_backtest_baseline1(returns, train_window, test_window, rf, collect_forecasts=True, collect_weights=False):
     """Бэктест: μ = историческое среднее."""
     n = len(returns)
     portfolio_returns = []
     dates = []
     forecast_records = [] if collect_forecasts else None
+    weights_list = [] if collect_weights else None
 
     total_steps = (n - train_window - test_window) // test_window + 1
     i = 0
@@ -458,6 +459,8 @@ def run_backtest_baseline1(returns, train_window, test_window, rf, collect_forec
 
         portfolio_returns.append(month_return)
         dates.append(test_data.index[0])
+        if weights_list is not None:
+            weights_list.append(weights)
 
         step += 1
         i += test_window
@@ -468,16 +471,24 @@ def run_backtest_baseline1(returns, train_window, test_window, rf, collect_forec
     print(f"  Завершено: {step} периодов")
     result = pd.Series(portfolio_returns, index=dates)
 
+    # Возврат результатов
+    returns_tuple = [result]
     if collect_forecasts:
         forecasts_df = pd.DataFrame(forecast_records)
-        return result, forecasts_df
-    return result
+        returns_tuple.append(forecasts_df)
+    if collect_weights:
+        weights_df = pd.DataFrame(weights_list, index=dates, columns=returns.columns)
+        returns_tuple.append(weights_df)
+
+    return tuple(returns_tuple) if len(returns_tuple) > 1 else result
 
 # %%
 print("="*50)
 print("Baseline 1: Историческое среднее")
 print("="*50)
-baseline1_returns, baseline1_forecasts = run_backtest_baseline1(log_returns, TRAIN_WINDOW, TEST_WINDOW, RF)
+baseline1_returns, baseline1_forecasts, baseline1_weights = run_backtest_baseline1(
+    log_returns, TRAIN_WINDOW, TEST_WINDOW, RF, collect_forecasts=True, collect_weights=True
+)
 baseline1_metrics = calculate_metrics(baseline1_returns, rf=RF)
 baseline1_forecast_metrics = aggregate_forecast_metrics(baseline1_forecasts)
 
@@ -557,12 +568,13 @@ def forecast_returns_statsforecast(train_returns, horizon, max_p, max_d, max_q, 
     return mu
 
 
-def run_backtest_statsforecast(returns, train_window, test_window, rf, max_p, max_d, max_q, stepwise=True, collect_forecasts=True):
+def run_backtest_statsforecast(returns, train_window, test_window, rf, max_p, max_d, max_q, stepwise=True, collect_forecasts=True, collect_weights=False):
     """Бэктест: μ = прогноз StatsForecast AutoARIMA."""
     n = len(returns)
     portfolio_returns = []
     dates = []
     forecast_records = [] if collect_forecasts else None
+    weights_list = [] if collect_weights else None
 
     total_steps = (n - train_window - test_window) // test_window + 1
     i = 0
@@ -615,6 +627,8 @@ def run_backtest_statsforecast(returns, train_window, test_window, rf, max_p, ma
 
         portfolio_returns.append(month_return)
         dates.append(test_data.index[0])
+        if weights_list is not None:
+            weights_list.append(weights)
 
         if step % 10 == 0 or step == 1:
             pct = step * 100 // total_steps
@@ -625,10 +639,16 @@ def run_backtest_statsforecast(returns, train_window, test_window, rf, max_p, ma
     print(f"  Завершено: {step} периодов")
     result = pd.Series(portfolio_returns, index=dates)
 
+    # Возврат результатов
+    returns_tuple = [result]
     if collect_forecasts:
         forecasts_df = pd.DataFrame(forecast_records)
-        return result, forecasts_df
-    return result
+        returns_tuple.append(forecasts_df)
+    if collect_weights:
+        weights_df = pd.DataFrame(weights_list, index=dates, columns=returns.columns)
+        returns_tuple.append(weights_df)
+
+    return tuple(returns_tuple) if len(returns_tuple) > 1 else result
 
 # %%
 print("="*50)
@@ -637,8 +657,9 @@ print("="*50)
 print(f"Параметры: max_p={ARIMA_MAX_P}, max_d={ARIMA_MAX_D}, max_q={ARIMA_MAX_Q}, stepwise={ARIMA_STEPWISE}")
 print("(stepwise=True ускоряет подбор ~10x)\n")
 
-baseline2_returns, baseline2_forecasts = run_backtest_statsforecast(
-    log_returns, TRAIN_WINDOW, TEST_WINDOW, RF, ARIMA_MAX_P, ARIMA_MAX_D, ARIMA_MAX_Q, ARIMA_STEPWISE
+baseline2_returns, baseline2_forecasts, baseline2_weights = run_backtest_statsforecast(
+    log_returns, TRAIN_WINDOW, TEST_WINDOW, RF, ARIMA_MAX_P, ARIMA_MAX_D, ARIMA_MAX_Q, ARIMA_STEPWISE,
+    collect_forecasts=True, collect_weights=True
 )
 baseline2_metrics = calculate_metrics(baseline2_returns, rf=RF)
 baseline2_forecast_metrics = aggregate_forecast_metrics(baseline2_forecasts)
@@ -1201,12 +1222,13 @@ def forecast_returns_patchtst(train_returns, config, return_raw=False):
     return mu
 
 
-def run_backtest_patchtst(returns, train_window, test_window, rf, config, collect_forecasts=True):
+def run_backtest_patchtst(returns, train_window, test_window, rf, config, collect_forecasts=True, collect_weights=False):
     """Бэктест: μ = прогноз PatchTST."""
     n = len(returns)
     portfolio_returns = []
     dates = []
     forecast_records = [] if collect_forecasts else None
+    weights_list = [] if collect_weights else None
 
     total_steps = (n - train_window - test_window) // test_window + 1
     i = 0
@@ -1257,6 +1279,8 @@ def run_backtest_patchtst(returns, train_window, test_window, rf, config, collec
 
         portfolio_returns.append(month_return)
         dates.append(test_data.index[0])
+        if weights_list is not None:
+            weights_list.append(weights)
 
         if step % 5 == 0 or step == 1:
             pct = step * 100 // total_steps
@@ -1267,10 +1291,16 @@ def run_backtest_patchtst(returns, train_window, test_window, rf, config, collec
     print(f"  Завершено: {step} периодов")
     result = pd.Series(portfolio_returns, index=dates)
 
+    # Возврат результатов
+    returns_tuple = [result]
     if collect_forecasts:
         forecasts_df = pd.DataFrame(forecast_records)
-        return result, forecasts_df
-    return result
+        returns_tuple.append(forecasts_df)
+    if collect_weights:
+        weights_df = pd.DataFrame(weights_list, index=dates, columns=returns.columns)
+        returns_tuple.append(weights_df)
+
+    return tuple(returns_tuple) if len(returns_tuple) > 1 else result
 
 # %%
 print("="*60)
@@ -1282,8 +1312,9 @@ print(f"d_model={D_MODEL}, n_heads={N_HEADS}, n_layers={N_LAYERS}")
 print(f"pretrain_epochs={PRETRAIN_EPOCHS}, finetune_epochs={FINETUNE_EPOCHS}, lr={PRETRAIN_LR}")
 print()
 
-patchtst_returns, patchtst_forecasts = run_backtest_patchtst(
-    log_returns, TRAIN_WINDOW, TEST_WINDOW, RF, patchtst_config
+patchtst_returns, patchtst_forecasts, patchtst_weights = run_backtest_patchtst(
+    log_returns, TRAIN_WINDOW, TEST_WINDOW, RF, patchtst_config,
+    collect_forecasts=True, collect_weights=True
 )
 patchtst_metrics = calculate_metrics(patchtst_returns, rf=RF)
 patchtst_forecast_metrics = aggregate_forecast_metrics(patchtst_forecasts)
@@ -1361,6 +1392,130 @@ plt.show()
 print(f"Baseline 1: $1 → ${cumulative1.iloc[-1]:.2f}")
 print(f"Baseline 2: $1 → ${cumulative2.iloc[-1]:.2f}")
 print(f"PatchTST:   $1 → ${cumulative3.iloc[-1]:.2f}")
+
+# %% [markdown]
+# ## 8. Анализ ребалансировки портфелей
+#
+# В этом разделе анализируем, как модели меняют веса активов во времени.
+
+# %%
+import seaborn as sns
+
+# Функция для расчёта turnover (оборота портфеля)
+def calculate_turnover(weights_df):
+    """Turnover = среднее изменение весов между периодами."""
+    diff = weights_df.diff().abs()
+    turnover = diff.sum(axis=1) / 2  # Делим на 2, т.к. продажа и покупка считаются дважды
+    return turnover
+
+# Рассчитываем turnover для всех моделей
+baseline1_turnover = calculate_turnover(baseline1_weights)
+baseline2_turnover = calculate_turnover(baseline2_weights)
+patchtst_turnover = calculate_turnover(patchtst_weights)
+
+print("="*60)
+print("АНАЛИЗ РЕБАЛАНСИРОВКИ ПОРТФЕЛЕЙ")
+print("="*60)
+print(f"\nBaseline 1 (Historical Mean):")
+print(f"  Средний turnover: {baseline1_turnover.mean():.2%}")
+print(f"  Максимум: {baseline1_turnover.max():.2%}")
+
+print(f"\nBaseline 2 (StatsForecast):")
+print(f"  Средний turnover: {baseline2_turnover.mean():.2%}")
+print(f"  Максимум: {baseline2_turnover.max():.2%}")
+
+print(f"\nPatchTST:")
+print(f"  Средний turnover: {patchtst_turnover.mean():.2%}")
+print(f"  Максимум: {patchtst_turnover.max():.2%}")
+
+# %%
+# Heatmaps весов для каждой модели
+fig, axes = plt.subplots(3, 1, figsize=(16, 12))
+
+# Baseline 1
+sns.heatmap(baseline1_weights.T, cmap='RdYlGn', center=0.1,
+            vmin=0, vmax=0.25, cbar_kws={'label': 'Вес в портфеле'},
+            ax=axes[0], xticklabels=20)
+axes[0].set_title('Baseline 1: Веса портфеля во времени', fontsize=14, fontweight='bold')
+axes[0].set_ylabel('Тикер')
+axes[0].set_xlabel('')
+
+# Baseline 2
+sns.heatmap(baseline2_weights.T, cmap='RdYlGn', center=0.1,
+            vmin=0, vmax=0.25, cbar_kws={'label': 'Вес в портфеле'},
+            ax=axes[1], xticklabels=20)
+axes[1].set_title('Baseline 2 (StatsForecast): Веса портфеля во времени', fontsize=14, fontweight='bold')
+axes[1].set_ylabel('Тикер')
+axes[1].set_xlabel('')
+
+# PatchTST
+sns.heatmap(patchtst_weights.T, cmap='RdYlGn', center=0.1,
+            vmin=0, vmax=0.25, cbar_kws={'label': 'Вес в портфеле'},
+            ax=axes[2], xticklabels=20)
+axes[2].set_title('PatchTST: Веса портфеля во времени', fontsize=14, fontweight='bold')
+axes[2].set_ylabel('Тикер')
+axes[2].set_xlabel('Период ребалансировки')
+
+plt.tight_layout()
+plt.show()
+
+# %%
+# Траектории весов для PatchTST (наиболее активная модель)
+fig, ax = plt.subplots(figsize=(16, 8))
+
+for ticker in patchtst_weights.columns:
+    ax.plot(patchtst_weights.index, patchtst_weights[ticker],
+            label=ticker, linewidth=1.5, alpha=0.8)
+
+ax.set_title('PatchTST: Траектории весов активов во времени', fontsize=14, fontweight='bold')
+ax.set_xlabel('Дата')
+ax.set_ylabel('Вес в портфеле')
+ax.legend(loc='upper left', bbox_to_anchor=(1, 1))
+ax.grid(True, alpha=0.3)
+ax.set_ylim(0, 0.30)
+plt.tight_layout()
+plt.show()
+
+# %%
+# Сравнение turnover по моделям
+fig, ax = plt.subplots(figsize=(16, 6))
+
+ax.plot(baseline1_turnover.index, baseline1_turnover.values,
+        label='Baseline 1', linewidth=2, alpha=0.7)
+ax.plot(baseline2_turnover.index, baseline2_turnover.values,
+        label='Baseline 2 (StatsForecast)', linewidth=2, alpha=0.7)
+ax.plot(patchtst_turnover.index, patchtst_turnover.values,
+        label='PatchTST', linewidth=2, alpha=0.7, color='green')
+
+ax.set_title('Сравнение оборота портфеля (Turnover)', fontsize=14, fontweight='bold')
+ax.set_xlabel('Дата')
+ax.set_ylabel('Turnover (доля изменённых весов)')
+ax.legend()
+ax.grid(True, alpha=0.3)
+plt.tight_layout()
+plt.show()
+
+# %%
+# Волатильность весов по активам
+weights_volatility = pd.DataFrame({
+    'Baseline 1': baseline1_weights.std(),
+    'Baseline 2': baseline2_weights.std(),
+    'PatchTST': patchtst_weights.std()
+})
+
+fig, ax = plt.subplots(figsize=(12, 6))
+weights_volatility.plot(kind='bar', ax=ax, width=0.8)
+ax.set_title('Волатильность весов по активам', fontsize=14, fontweight='bold')
+ax.set_xlabel('Тикер')
+ax.set_ylabel('Стандартное отклонение веса')
+ax.legend(title='Модель')
+ax.grid(True, alpha=0.3, axis='y')
+plt.xticks(rotation=0)
+plt.tight_layout()
+plt.show()
+
+print("\nВолатильность весов по активам:")
+print(weights_volatility.round(4))
 
 # %%
 # Сохранение результатов
