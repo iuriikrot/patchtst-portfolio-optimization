@@ -465,8 +465,12 @@ def run_backtest_baseline1(returns, train_window, test_window, rf, collect_forec
         step += 1
         i += test_window
 
-        if step % 50 == 0:
-            print(f"  Шаг {step}/{total_steps} ({step*100//total_steps}%)")
+        if step % 20 == 0 or step == 1:
+            # Топ-3 актива с наибольшими весами
+            top_idx = weights.argsort()[-3:][::-1]
+            top_weights = [(returns.columns[i], weights[i]) for i in top_idx]
+            top_str = ", ".join([f"{ticker}:{w:.1%}" for ticker, w in top_weights])
+            print(f"  Шаг {step}: {test_data.index[0].date()} | top-3: {top_str}, std={weights.std():.3f}")
 
     print(f"  Завершено: {step} периодов")
     result = pd.Series(portfolio_returns, index=dates)
@@ -631,8 +635,13 @@ def run_backtest_statsforecast(returns, train_window, test_window, rf, max_p, ma
             weights_list.append(weights)
 
         if step % 10 == 0 or step == 1:
-            pct = step * 100 // total_steps
-            print(f"  Шаг {step:3d}/{total_steps} ({pct:2d}%) | Дата: {test_data.index[0].date()}")
+            # Топ-3 актива с наибольшими весами
+            top_idx = weights.argsort()[-3:][::-1]
+            top_weights = [(returns.columns[i], weights[i]) for i in top_idx]
+            top_str = ", ".join([f"{ticker}:{w:.1%}" for ticker, w in top_weights])
+            print(f"  Шаг {step}: {test_data.index[0].date()}")
+            print(f"    μ range: [{mu.min():.4f}, {mu.max():.4f}]")
+            print(f"    top-3: {top_str}, std={weights.std():.3f}")
 
         i += test_window
 
@@ -1284,7 +1293,13 @@ def run_backtest_patchtst(returns, train_window, test_window, rf, config, collec
 
         if step % 5 == 0 or step == 1:
             pct = step * 100 // total_steps
-            print(f"  Шаг {step:3d}/{total_steps} ({pct:2d}%) | Дата: {test_data.index[0].date()}")
+            # Топ-3 актива с наибольшими весами
+            top_idx = weights.argsort()[-3:][::-1]
+            top_weights = [(returns.columns[i], weights[i]) for i in top_idx]
+            top_str = ", ".join([f"{ticker}:{w:.1%}" for ticker, w in top_weights])
+            print(f"  Шаг {step}/{total_steps} ({pct}%): {test_data.index[0].date()}")
+            print(f"    μ range: [{mu.min():.4f}, {mu.max():.4f}]")
+            print(f"    top-3: {top_str}, std={weights.std():.3f}")
 
         i += test_window
 

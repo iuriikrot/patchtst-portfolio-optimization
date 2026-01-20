@@ -234,7 +234,9 @@ def run_backtest(returns, save_weights_path=None, collect_forecasts=False):
             top_idx = weights.argsort()[-3:][::-1]
             top_weights = [(returns.columns[i], weights[i]) for i in top_idx]
             top_str = ", ".join([f"{ticker}:{w:.1%}" for ticker, w in top_weights])
-            print(f"Шаг {step}: {test_data.index[0].date()} | top-3: {top_str}")
+            print(f"Шаг {step}: {test_data.index[0].date()}")
+            print(f"  μ range: [{mu.min():.4f}, {mu.max():.4f}]")
+            print(f"  top-3: {top_str}, std={weights.std():.3f}")
 
     print(f"\nЗавершено. Всего периодов: {len(portfolio_returns)}")
 
