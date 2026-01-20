@@ -265,9 +265,13 @@ def run_backtest(returns, save_weights_path=None, collect_forecasts=False):
 
         if step % 5 == 0 or step == 1:
             pct = step * 100 // total_steps
+            # Топ-3 актива с наибольшими весами
+            top_idx = weights.argsort()[-3:][::-1]
+            top_weights = [(returns.columns[i], weights[i]) for i in top_idx]
+            top_str = ", ".join([f"{ticker}:{w:.1%}" for ticker, w in top_weights])
             print(f"Шаг {step}/{total_steps} ({pct}%): {test_data.index[0].date()}")
             print(f"  μ range: [{mu.min():.4f}, {mu.max():.4f}]")
-            print(f"  weights: [{weights.min():.2%}, {weights.max():.2%}]")
+            print(f"  top-3: {top_str}, std={weights.std():.3f}")
 
         i += TEST_WINDOW
 

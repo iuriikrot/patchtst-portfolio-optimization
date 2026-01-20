@@ -82,9 +82,9 @@ models:
       dropout: 0.1                  # Официальное
       use_revin: true               # Рекомендовано в PatchTST
       mask_ratio: 0.15               # Официальное
-      pretrain_epochs: 20           # Официальное (self-supervised)
+      pretrain_epochs: 30           # Официальное (self-supervised)
       finetune_epochs: 10            # Fine-tuning prediction head (supervised)
-      pretrain_lr: 0.007           # Официальное (1e-4)
+      pretrain_lr: 0.005           # Официальное (1e-4)
       batch_size: 64                # Официальное
 
 # Параметры оптимизации Марковица
