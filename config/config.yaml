@@ -3,17 +3,37 @@
 
 # Параметры данных
 data:
-  tickers:                          # 10 акций из разных секторов S&P 500
-    - AAPL   # Technology
-    - MSFT   # Technology
-    - JNJ    # Healthcare
-    - UNH    # Healthcare
-    - JPM    # Financials
-    - WFC    # Financials (Wells Fargo)
-    - XOM    # Energy
-    - CVX    # Energy
-    - PG     # Consumer Staples
-    - KO     # Consumer Staples
+  tickers:                          # 20 акций из разных секторов S&P 500
+    # Technology (3)
+    - AAPL   # Apple
+    - MSFT   # Microsoft
+    - INTC   # Intel
+    # Healthcare (3)
+    - JNJ    # Johnson & Johnson
+    - UNH    # UnitedHealth
+    - PFE    # Pfizer
+    # Financials (3)
+    - JPM    # JPMorgan Chase
+    - WFC    # Wells Fargo
+    - GS     # Goldman Sachs
+    # Energy (2)
+    - XOM    # Exxon Mobil
+    - CVX    # Chevron
+    # Consumer Staples (2)
+    - PG     # Procter & Gamble
+    - KO     # Coca-Cola
+    # Industrials (2)
+    - CAT    # Caterpillar
+    - MMM    # 3M
+    # Consumer Discretionary (2)
+    - HD     # Home Depot
+    - MCD    # McDonald's
+    # Utilities (1)
+    - DUK    # Duke Energy
+    # Communication Services (1)
+    - VZ     # Verizon
+    # Materials (1)
+    - NEM    # Newmont (золотодобыча)
   start_date: "2010-01-01"
   end_date: "2025-01-01"
   price_column: "Adj Close"         # Используем скорректированные цены
@@ -79,12 +99,12 @@ models:
       n_heads: 16                   # Официальное
       n_layers: 3                   # Официальное
       d_ff: 512                     # Официальное (patchtst_pretrain.py)
-      dropout: 0.15                  # Официальное
+      dropout: 0.1                  # Официальное
       use_revin: true               # Рекомендовано в PatchTST
       mask_ratio: 0.15               # Официальное
       pretrain_epochs: 20           # Официальное (self-supervised)
       finetune_epochs: 10            # Fine-tuning prediction head (supervised)
-      pretrain_lr: 0.005           # Официальное (1e-4)
+      pretrain_lr: 0.015           # Официальное (1e-4)
       batch_size: 64                # Официальное
 
 # Параметры оптимизации Марковица
@@ -95,6 +115,6 @@ optimization:
   constraints:
     long_only: true                 # Только длинные позиции (w >= 0)
     fully_invested: true            # Полное инвестирование (sum(w) = 1)
-    max_weight: 0.25                # Максимальный вес одного актива (40%)
-    min_weight: 0.05                # Минимальный вес
+    max_weight: 0.2                # Максимальный вес одного актива (40%)
+    min_weight: 0.01                # Минимальный вес
     gross_exposure: 1.5             # sum(|w|) <= L (используется только при long_only=false)

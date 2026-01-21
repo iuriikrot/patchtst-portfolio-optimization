@@ -198,11 +198,13 @@ def run_backtest(returns, save_weights_path=None, collect_forecasts=False):
     print(f"Test окно: {TEST_WINDOW} дней")
     print(f"Акций: {len(returns.columns)}")
     print(f"PatchTST параметры:")
-    print(f"  - input_len: {INPUT_LEN}")
+    print(f"  - input_len: {INPUT_LEN}, pred_len: {PRED_LEN}")
     print(f"  - patch_len: {PATCH_LEN}, stride: {STRIDE}")
-    print(f"  - d_model: {D_MODEL}, n_heads: {N_HEADS}, n_layers: {N_LAYERS}")
+    print(f"  - d_model: {D_MODEL}, n_heads: {N_HEADS}, n_layers: {N_LAYERS}, d_ff: {D_FF}")
+    print(f"  - dropout: {DROPOUT}, use_revin: {USE_REVIN}")
     print(f"  - mask_ratio: {MASK_RATIO}")
-    print(f"  - pretrain_epochs: {PRETRAIN_EPOCHS}")
+    print(f"  - pretrain_epochs: {PRETRAIN_EPOCHS}, finetune_epochs: {FINETUNE_EPOCHS}")
+    print(f"  - pretrain_lr: {PRETRAIN_LR}, batch_size: {BATCH_SIZE}")
     print("\nЗапуск бэктеста...\n")
 
     total_steps = (n - TRAIN_WINDOW - TEST_WINDOW) // TEST_WINDOW + 1

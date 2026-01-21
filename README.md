@@ -1,5 +1,19 @@
 # VKR: PatchTST для портфельной оптимизации Марковица
 
+## Быстрый старт
+
+```bash
+# 1. Установка зависимостей
+pip install -r requirements.txt
+
+# 2. Запуск всех моделей
+python run_all.py
+```
+
+Результаты сохраняются в `results/`.
+
+---
+
 ## Тема исследования
 
 Применение модели PatchTST Self-Supervised для прогнозирования ожидаемых доходностей в задаче портфельной оптимизации по Марковицу.
@@ -47,8 +61,8 @@ s.t. Σw_i = 1, 0.05 <= w_i <= 0.25
 
 ## Данные
 
-- **Активы:** 10 акций из разных секторов S&P 500 (задаются в `config/config.yaml`)
-- **Период:** `data.start_date` — `data.end_date` (по умолчанию 2010-01-01 — 2025-01-01)
+- **Активы:** 20 акций из 10 секторов S&P 500 (задаются в `config/config.yaml`)
+- **Период:** 2010-01-01 — 2025-01-01
 - **Источник:** Yahoo Finance (Adjusted Close)
 - **Файлы:** `data/raw/prices.csv`, `data/raw/log_returns.csv`
 
@@ -66,22 +80,27 @@ s.t. Σw_i = 1, 0.05 <= w_i <= 0.25
 
 ```
 VKR_Patch/
-├── run_all.py                    # Интерактивный запуск всех моделей
-├── config/config.yaml            # Конфигурация
+├── run_all.py                    # Запуск всех моделей
+├── config/config.yaml            # Конфигурация эксперимента
 ├── data/raw/                     # Данные (prices, log_returns)
 ├── src/
+│   ├── data/                     # Загрузка и предобработка
 │   ├── models/
-│   │   └── patchtst_reference/   # PatchTST (reference)
+│   │   ├── patchtst.py           # PatchTST Self-Supervised
+│   │   └── patchtst_reference/   # Reference реализация
 │   ├── optimization/
 │   │   ├── markowitz.py          # Оптимизатор Марковица
 │   │   └── covariance.py         # Оценка ковариации
-│   └── backtesting/
-│       ├── backtest.py           # Baseline 1
-│       ├── backtest_statsforecast.py # Baseline 2 (StatsForecast)
-│       └── backtest_patchtst.py  # PatchTST
+│   ├── backtesting/
+│   │   ├── backtest.py           # Baseline 1 (историческое среднее)
+│   │   ├── backtest_statsforecast.py  # Baseline 2 (AutoARIMA)
+│   │   └── backtest_patchtst.py  # PatchTST
+│   └── utils/
+│       └── forecast_metrics.py   # Метрики прогнозов
 ├── notebooks/
 │   └── 01_portfolio_comparison.ipynb  # Colab notebook
-└── results/                      # Метрики и веса портфеля
+├── docs/                         # Документация
+└── results/                      # Результаты экспериментов
 ```
 
 ## Установка

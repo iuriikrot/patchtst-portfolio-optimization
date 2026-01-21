@@ -1,10 +1,26 @@
 # Структура проекта VKR_Patch
 
+## Быстрый старт
+
+```bash
+# 1. Установка зависимостей
+pip install -r requirements.txt
+
+# 2. Запуск всех моделей (рекомендуется)
+python run_all.py
+
+# 3. Или быстрый режим PatchTST (для отладки)
+python run_all.py --fast
+```
+
+Результаты сохраняются в `results/`.
+
+---
+
 ## Дерево файлов
 
 ```
 VKR_Patch/
-│
 ├── config/
 │   └── config.yaml                 # Конфигурация эксперимента
 │
@@ -24,24 +40,24 @@ VKR_Patch/
 │   ├── models/
 │   │   ├── __init__.py
 │   │   ├── patchtst.py             # PatchTST Self-Supervised модель
-│   │   ├── arima_example.py        # Примеры работы с ARIMA
 │   │   └── patchtst_reference/     # Официальный код PatchTST (reference)
 │   │       ├── PatchTST_backbone.py
 │   │       ├── PatchTST_layers.py
-│   │       ├── patchTST_selfsupervised.py
-│   │       └── README.md
+│   │       └── patchTST_selfsupervised.py
 │   │
 │   ├── optimization/
 │   │   ├── __init__.py
-│   │   └── markowitz.py            # Оптимизатор Марковица (max Sharpe)
+│   │   ├── markowitz.py            # Оптимизатор Марковица (max Sharpe)
+│   │   └── covariance.py           # Оценка ковариации (sample / Ledoit-Wolf)
 │   │
 │   ├── utils/
-│   │   └── __init__.py
+│   │   ├── __init__.py
+│   │   └── forecast_metrics.py     # Метрики прогнозов (MAE, RMSE, DA)
 │   │
 │   └── backtesting/
 │       ├── __init__.py
 │       ├── backtest.py             # Baseline 1: историческое среднее
-│       ├── backtest_arima.py       # Baseline 2: ARIMA
+│       ├── backtest_statsforecast.py  # Baseline 2: StatsForecast AutoARIMA
 │       └── backtest_patchtst.py    # PatchTST Self-Supervised
 │
 ├── notebooks/
@@ -50,8 +66,9 @@ VKR_Patch/
 │
 ├── results/                        # Результаты бэктестов
 │
-├── tests/
-│   └── __init__.py
+├── docs/
+│   ├── PROJECT_PLAN.md             # План развития проекта
+│   └── markowitz_formula.png       # Формула оптимизации
 │
 ├── .gitignore
 ├── README.md
@@ -64,15 +81,15 @@ VKR_Patch/
 
 ## Три подхода к оценке μ
 
-Все три метода используют **одинаковые параметры бэктеста**:
+Все три метода используют **одинаковые параметры бэктеста** (из `config/config.yaml`):
 - **TRAIN_WINDOW = 1260 дней** (5 лет)
 - **TEST_WINDOW = 21 день** (1 месяц)
-- **RF = 0.02** (безрисковая ставка)
+- **RF = 0.04** (безрисковая ставка)
 
 | Подход | Оценка μ | Вход | Файл |
 |--------|----------|------|------|
 | **Baseline 1** | mean(r) × 252 | 1260 дней | `backtest.py` |
-| **Baseline 2** | ARIMA(21).mean × 252 | 1260 дней | `backtest_arima.py` |
+| **Baseline 2** | AutoARIMA(21).mean × 252 | 1260 дней | `backtest_statsforecast.py` |
 | **PatchTST** | forecast(21).mean × 252 | 1260 дней | `backtest_patchtst.py` |
 
 ---
@@ -167,7 +184,7 @@ s.t. Σw = 1, w ≥ 0
 ┌─────────────────────────────────────────────────────────────────┐
 │                         ДАННЫЕ                                   │
 │  Yahoo Finance → Adj Close → Log Returns                         │
-│  10 акций S&P 500, 2000-2025                                     │
+│  20 акций S&P 500 из 10 секторов, 2010-2025                      │
 └─────────────────────────────────────────────────────────────────┘
                               │
                               ▼
@@ -234,7 +251,7 @@ python run_all.py --fast
 python src/backtesting/backtest.py
 
 # Baseline 2: StatsForecast AutoARIMA
-python src/backtesting/backtest_arima.py
+python src/backtesting/backtest_statsforecast.py
 
 # PatchTST Self-Supervised
 python src/backtesting/backtest_patchtst.py
