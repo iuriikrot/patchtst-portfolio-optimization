@@ -8,8 +8,7 @@ torch>=2.0.0
 pytorch-lightning>=2.0.0
 
 # Time Series
-statsmodels>=0.14.0
-statsforecast>=1.6.0
+statsforecast>=1.6.0    # AutoARIMA
 
 # Optimization
 scipy>=1.10.0
