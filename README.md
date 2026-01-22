@@ -34,10 +34,8 @@ python run_all.py
 
 ```
 max  (w'μ - r_f) / sqrt(w'Σw)
-s.t. Σw_i = 1, 0.05 <= w_i <= 0.25
+s.t. Σw_i = 1, w_i >= 0
 ```
-
-![Markowitz formula](docs/markowitz_formula.png)
 
 где:
 - **w** — вектор весов активов
