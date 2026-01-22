@@ -3,118 +3,101 @@
 
 # Параметры данных
 data:
-  tickers:                          # 20 акций из разных секторов S&P 500
+  tickers:                          # 20 акций из 10 секторов S&P 500
     # Technology (3)
-    - AAPL   # Apple
-    - MSFT   # Microsoft
-    - INTC   # Intel
+    - AAPL
+    - MSFT
+    - INTC
     # Healthcare (3)
-    - JNJ    # Johnson & Johnson
-    - UNH    # UnitedHealth
-    - PFE    # Pfizer
+    - JNJ
+    - UNH
+    - PFE
     # Financials (3)
-    - JPM    # JPMorgan Chase
-    - WFC    # Wells Fargo
-    - GS     # Goldman Sachs
+    - JPM
+    - WFC
+    - GS
     # Energy (2)
-    - XOM    # Exxon Mobil
-    - CVX    # Chevron
+    - XOM
+    - CVX
     # Consumer Staples (2)
-    - PG     # Procter & Gamble
-    - KO     # Coca-Cola
+    - PG
+    - KO
     # Industrials (2)
-    - CAT    # Caterpillar
-    - MMM    # 3M
+    - CAT
+    - MMM
     # Consumer Discretionary (2)
-    - HD     # Home Depot
-    - MCD    # McDonald's
+    - HD
+    - MCD
     # Utilities (1)
-    - DUK    # Duke Energy
+    - DUK
     # Communication Services (1)
-    - VZ     # Verizon
+    - VZ
     # Materials (1)
-    - NEM    # Newmont (золотодобыча)
+    - NEM
   start_date: "2010-01-01"
   end_date: "2025-01-01"
-  price_column: "Adj Close"         # Используем скорректированные цены
+  price_column: "Adj Close"
 
 # Параметры бэктестинга
 backtest:
-  train_window: 1260                # 5 лет * 252 торговых дня
-  test_window: 21                   # 1 месяц (21 торговый день)
+  train_window: 1260                # 5 лет (252 * 5)
+  test_window: 21                   # 1 месяц
 
 # Параметры моделей
 models:
-  # ARIMA(p, d, q) с автоматическим подбором (StatsForecast AutoARIMA):
-  #   p — порядок авторегрессии (AR), зависимость от прошлых значений
-  #   d — порядок дифференцирования (I), для приведения к стационарности
-  #   q — порядок скользящего среднего (MA), зависимость от прошлых ошибок
-  #   stepwise=True — умный поиск вместо полного перебора (быстрее в ~10 раз)
   arima:
-    max_p: 3                        # AR: r_t зависит от r_{t-1}, ..., r_{t-p}
-    max_d: 1                        # Максимальный порядок дифференцирования
-    max_q: 3                        # MA: r_t зависит от ε_{t-1}, ..., ε_{t-q}
-    stepwise: true                  # Умный поиск (не полный перебор)
+    max_p: 3
+    max_d: 1
+    max_q: 3
+    stepwise: true
 
   patchtst:
-    # Режим: 'fast' для отладки, 'full' для финальных результатов
-    mode: "full"
+    mode: "full"                    # fast | full
 
-    # Режим отладки (~10 минут, проверка что код работает)
-    # Уменьшенные параметры для быстрой проверки работоспособности кода
+    # Быстрый режим (для отладки)
     fast:
-      input_length: 252             # 1 год (даёт 988 примеров для fine-tuning)
-      pred_length: 21               # Как в full
-      patch_length: 21              # Больше → меньше патчей
-      stride: 21                    # Без перекрытия → 12 патчей
-      d_model: 64                   # Уменьшено 128→64 для скорости
-      n_heads: 4                    # Уменьшено 16→4 для скорости
-      n_layers: 2                   # Уменьшено 3→2 для скорости
-      d_ff: 256                     # Уменьшено 512→256 для скорости
-      dropout: 0.2                  # Как в full (официальное)
-      use_revin: true               # Как в full
-      mask_ratio: 0.4               # Как в full (официальное)
-      pretrain_epochs: 3            # Уменьшено 10→3 для скорости
-      finetune_epochs: 3            # Fine-tuning prediction head
-      pretrain_lr: 0.0001           # Как в full (официальное)
-      batch_size: 64                # Как в full (официальное)
+      input_length: 252
+      pred_length: 21
+      patch_length: 21
+      stride: 21
+      d_model: 64
+      n_heads: 4
+      n_layers: 2
+      d_ff: 256
+      dropout: 0.2
+      use_revin: true
+      mask_ratio: 0.4
+      pretrain_epochs: 3
+      finetune_epochs: 3
+      pretrain_lr: 0.0001
+      batch_size: 64
 
-    # Полный режим (официальные параметры Self-Supervised PatchTST)
-    # Источник: github.com/yuqinie98/PatchTST/PatchTST_self_supervised/patchtst_pretrain.py
-    # Официальные дефолты из argument parser:
-    #   --d_model 128, --n_heads 16, --n_layers 3, --d_ff 512
-    #   --dropout 0.2, --mask_ratio 0.4, --lr 1e-4
-    #   --batch_size 64, --n_epochs_pretrain 10
-    #
-    # input_length=252 (1 год) даёт:
-    #   - 988 примеров для fine-tuning (1260-252-21+1)
-    #   - 202 примеров для pretraining ((1260-252)/5+1)
-    #   - 30 патчей ((252-16)/8+1)
+    # Полный режим
     full:
-      input_length: 252             # 1 год (официальный подход: input << train_window)
+      input_length: 252             # 1 год
       pred_length: 21               # 1 месяц
-      patch_length: 16              # Официальное
-      stride: 8                     # Официальное (с перекрытием)
-      d_model: 128                  # Официальное
-      n_heads: 16                   # Официальное
-      n_layers: 3                   # Официальное
-      d_ff: 512                     # Официальное (patchtst_pretrain.py)
-      dropout: 0.1                  # Официальное
-      use_revin: true               # Рекомендовано в PatchTST
-      mask_ratio: 0.15               # Официальное
-      pretrain_epochs: 20           # Официальное (self-supervised)
-      finetune_epochs: 10            # Fine-tuning prediction head (supervised)
-      pretrain_lr: 0.005           # Официальное (1e-4)
-      batch_size: 64                # Официальное
+      patch_length: 16
+      stride: 8
+      d_model: 128
+      n_heads: 16
+      n_layers: 3
+      d_ff: 512
+      dropout: 0.1
+      use_revin: true
+      mask_ratio: 0.15
+      pretrain_epochs: 20
+      finetune_epochs: 10
+      pretrain_lr: 0.005
+      batch_size: 64
 
 # Параметры оптимизации Марковица
 optimization:
-  risk_free_rate: 0.04              # Безрисковая ставка (2% годовых)
-  covariance: "ledoit_wolf"              # sample | ledoit_wolf
+  risk_free_rate: 0.04              # 4% годовых
+  covariance: "ledoit_wolf"         # sample | ledoit_wolf
 
   constraints:
-    long_only: true                 # Только длинные позиции (w >= 0)
-    fully_invested: true            # Полное инвестирование (sum(w) = 1)
-    max_weight: 0.2                # Максимальный вес одного актива (40%)
-    min_weight: 0.01                # Минимальный вес
-    gross_exposure: 1.5             # sum(|w|) <= L (используется только при long_only=false)
+    long_only: true
+    fully_invested: true
+    max_weight: 0.2                 # Максимум 20% на актив
+    min_weight: 0.01                # Минимум 1% на актив
+    gross_exposure: 1.5             # Только при long_only=false
