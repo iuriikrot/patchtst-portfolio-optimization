@@ -5,7 +5,7 @@
 *Comparison of Return Forecasting Methods for Markowitz Portfolio Optimization: Historical Mean, AutoARIMA, PatchTST Transformer*
 
 **Автор:** Кротов Ю.В. (Iurii Krotov)
-**ВУЗ:** НИУ ВШЭ (HSE University)
+**ВУЗ:** НИУ ВШЭ, Факультет экономических наук (HSE University, Faculty of Economic Sciences)
 **Дата:** Январь 2026
 
 ---
