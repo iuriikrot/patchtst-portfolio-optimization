@@ -61,8 +61,7 @@ VKR_Patch/
 │       └── backtest_patchtst.py    # PatchTST Self-Supervised
 │
 ├── notebooks/
-│   ├── portfolio_comparison.ipynb  # Colab notebook (все три метода)
-│   └── portfolio_comparison.py     # Python версия notebook
+│   └── portfolio_comparison.py     # Standalone скрипт (все три метода)
 │
 ├── results/                        # Результаты бэктестов
 │
@@ -248,10 +247,6 @@ python src/backtesting/backtest_statsforecast.py
 # PatchTST Self-Supervised
 python src/backtesting/backtest_patchtst.py
 ```
-
-### Colab Notebook:
-
-Открыть `notebooks/portfolio_comparison.ipynb` в Google Colab.
 
 ---
 

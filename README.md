@@ -106,7 +106,7 @@ VKR_Patch/
 │   └── utils/
 │       └── forecast_metrics.py   # Метрики прогнозов
 ├── notebooks/
-│   └── portfolio_comparison.ipynb  # Colab notebook
+│   └── portfolio_comparison.py     # Standalone Python script
 ├── results/                      # Результаты экспериментов
 ├── LICENSE                       # MIT лицензия
 └── RESULTS.md                    # Результаты исследования
@@ -142,10 +142,6 @@ python3 src/backtesting/backtest_statsforecast.py
 # PatchTST Self-Supervised
 python3 src/backtesting/backtest_patchtst.py
 ```
-
-### Colab Notebook:
-
-Открыть `notebooks/portfolio_comparison.ipynb` в Google Colab.
 
 ## Результаты и метрики
 

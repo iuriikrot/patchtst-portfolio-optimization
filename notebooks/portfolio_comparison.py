@@ -1,10 +1,14 @@
 # %% [markdown]
-# # Сравнение подходов к оценке ожидаемой доходности в портфельной оптимизации Марковица
+# # Сравнение методов прогнозирования доходности для портфельной оптимизации Марковица
+#
+# **Автор:** Кротов Ю.В. (Iurii Krotov)
+# **ВУЗ:** НИУ ВШЭ (HSE University)
+# **Дата:** Январь 2026
 #
 # **Три подхода:**
 # 1. Baseline 1: Историческое среднее
-# 2. Baseline 2: StatsForecast AutoARIMA прогноз
-# 3. PatchTST Self-Supervised прогноз
+# 2. Baseline 2: StatsForecast AutoARIMA
+# 3. PatchTST Self-Supervised
 #
 # **Источник PatchTST:** https://github.com/yuqinie98/PatchTST
 
@@ -19,21 +23,31 @@
 #==============================================================================
 
 CONFIG = {
-    # Данные
+    # Данные (20 акций из 10 секторов S&P 500)
     'data': {
         'tickers': [
-            "AAPL",  # Technology
-            "MSFT",  # Technology
-            "JNJ",   # Healthcare
-            "UNH",   # Healthcare
-            "JPM",   # Financials
-            "WFC",   # Financials (Wells Fargo)
-            "XOM",   # Energy
-            "CVX",   # Energy
-            "PG",    # Consumer Staples
-            "KO",    # Consumer Staples
+            # Technology (3)
+            "AAPL", "MSFT", "INTC",
+            # Healthcare (3)
+            "JNJ", "UNH", "PFE",
+            # Financials (3)
+            "JPM", "WFC", "GS",
+            # Energy (2)
+            "XOM", "CVX",
+            # Consumer Staples (2)
+            "PG", "KO",
+            # Industrials (2)
+            "CAT", "MMM",
+            # Consumer Discretionary (2)
+            "HD", "MCD",
+            # Utilities (1)
+            "DUK",
+            # Communication Services (1)
+            "VZ",
+            # Materials (1)
+            "NEM",
         ],
-        'start_date': "2000-01-01",
+        'start_date': "2010-01-01",
         'end_date': "2025-01-01",
     },
 
@@ -45,75 +59,65 @@ CONFIG = {
 
     # Оптимизация Марковица
     'optimization': {
-        'risk_free_rate': 0.02,  # 2% годовых
+        'risk_free_rate': 0.04,  # 4% годовых
         'constraints': {
-            'long_only': True,      # Только длинные позиции
-            'fully_invested': True, # Полное инвестирование
-            'max_weight': 0.4,      # Максимальный вес одного актива
-            'min_weight': 0.0,      # Минимальный вес
-            'gross_exposure': 1.5,  # sum(|w|) <= L (используется только при long_only=false)
+            'long_only': True,
+            'fully_invested': True,
+            'max_weight': 0.2,      # Максимум 20% на актив
+            'min_weight': 0.01,     # Минимум 1% на актив
+            'gross_exposure': 1.5,
         },
-        'covariance': 'sample',    # sample | ledoit_wolf
+        'covariance': 'ledoit_wolf',  # sample | ledoit_wolf
     },
 
     # Модели
     'models': {
-        # ARIMA(p, d, q) с автоматическим подбором (StatsForecast AutoARIMA):
-        #   p — порядок авторегрессии (AR), зависимость от прошлых значений
-        #   d — порядок дифференцирования (I), для приведения к стационарности
-        #   q — порядок скользящего среднего (MA), зависимость от прошлых ошибок
-        # max_d: верхняя граница для d
-        # stepwise=True: умный поиск вместо полного перебора (~10x быстрее)
         'arima': {
-            'max_p': 3,  # AR: r_t зависит от r_{t-1}, r_{t-2}, r_{t-3}
-            'max_d': 0,  # Максимальный порядок дифференцирования
-            'max_q': 3,  # MA: r_t зависит от ε_{t-1}, ε_{t-2}, ε_{t-3}
-            'stepwise': True,  # Умный поиск (не полный перебор)
+            'max_p': 3,
+            'max_d': 1,
+            'max_q': 3,
+            'stepwise': True,
         },
 
-        # PatchTST Self-Supervised
         'patchtst': {
-            # Режим: 'fast' для отладки, 'full' для финальных результатов
-            'mode': 'full',
+            'mode': 'full',  # fast | full
 
-            # Режим отладки (~10 минут, проверка что код работает)
+            # Быстрый режим (для отладки)
             'fast': {
-                'input_length': 252,     # 1 год (даёт 988 примеров для fine-tuning)
+                'input_length': 252,
                 'pred_length': 21,
-                'patch_length': 21,      # Больше → меньше патчей
-                'stride': 21,            # Без перекрытия → 12 патчей
-                'd_model': 64,           # Уменьшено для скорости
-                'n_heads': 4,            # Уменьшено для скорости
-                'n_layers': 2,           # Уменьшено для скорости
-                'd_ff': 256,             # Уменьшено для скорости
+                'patch_length': 21,
+                'stride': 21,
+                'd_model': 64,
+                'n_heads': 4,
+                'n_layers': 2,
+                'd_ff': 256,
                 'dropout': 0.2,
                 'use_revin': True,
                 'mask_ratio': 0.4,
-                'pretrain_epochs': 3,    # Минимум для проверки
-                'finetune_epochs': 3,    # Fine-tuning prediction head
+                'pretrain_epochs': 3,
+                'finetune_epochs': 3,
                 'pretrain_lr': 0.0001,
                 'batch_size': 64,
             },
 
-            # Полный режим (официальные параметры Self-Supervised PatchTST)
-            # Источник: github.com/yuqinie98/PatchTST/PatchTST_self_supervised/patchtst_pretrain.py
-            # input_length=252 (1 год) даёт: 988 примеров, 30 патчей
+            # Полный режим
             'full': {
-                'input_length': 252,     # 1 год (официальный подход: input << train_window)
-                'pred_length': 21,
-                'patch_length': 16,      # Официальное
-                'stride': 8,             # Официальное → 30 патчей
-                'd_model': 128,          # Официальное
-                'n_heads': 16,           # Официальное
-                'n_layers': 3,           # Официальное
-                'd_ff': 512,             # Официальное
-                'dropout': 0.2,          # Официальное
+                'input_length': 252,     # 1 год
+                'pred_length': 21,       # 1 месяц
+                'patch_length': 16,
+                'stride': 8,
+                'd_model': 128,
+                'n_heads': 16,
+                'n_layers': 3,
+                'd_ff': 512,
+                'dropout': 0.1,
                 'use_revin': True,
-                'mask_ratio': 0.4,       # Официальное
-                'pretrain_epochs': 10,   # Официальное (self-supervised)
-                'finetune_epochs': 5,    # Fine-tuning prediction head
-                'pretrain_lr': 0.0001,   # Официальное (1e-4)
-                'batch_size': 64,        # Официальное
+                'mask_ratio': 0.15,
+                'pretrain_epochs': 20,
+                'finetune_epochs': 10,
+                'pretrain_lr': 0.005,
+                'batch_size': 64,
             },
         },
     },
