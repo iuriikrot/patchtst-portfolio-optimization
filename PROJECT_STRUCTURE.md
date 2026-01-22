@@ -40,7 +40,7 @@ VKR_Patch/
 │   ├── models/
 │   │   ├── __init__.py
 │   │   ├── patchtst.py             # PatchTST Self-Supervised модель
-│   │   └── patchtst_reference/     # Официальный код PatchTST (reference)
+│   │   └── patchtst_reference/     # Reference реализация PatchTST
 │   │       ├── PatchTST_backbone.py
 │   │       ├── PatchTST_layers.py
 │   │       └── patchTST_selfsupervised.py
@@ -99,9 +99,9 @@ VKR_Patch/
 ### Архитектура
 
 ```
-Вход: 1260 дней (5 лет)
+Вход: 252 дня (1 год)
     ↓
-Patching: 156 патчей (patch=16, stride=8)
+Patching: 30 патчей (patch=16, stride=8)
     ↓
 Embedding: Linear(16 → 128)
     ↓
@@ -117,36 +117,30 @@ Prediction Head → 21 день
 ### Self-Supervised Pre-training
 
 ```
-1. Маскируем 40% патчей случайно
+1. Маскируем 15% патчей случайно
 2. Модель учится восстанавливать замаскированные патчи
 3. Loss = MSE(predicted_patches, real_patches)
 ```
 
-### Параметры модели
+### Параметры модели (full mode)
 
 ```yaml
-# Параметры PatchTST (full mode, из config.yaml)
-# Источник: github.com/yuqinie98/PatchTST/PatchTST_self_supervised
-#
-# input_length=252 (1 год) даёт:
-#   - 988 примеров для fine-tuning (1260-252-21+1)
-#   - 30 патчей ((252-16)/8+1)
 patchtst:
-  input_length: 252         # 1 год (официальный подход: input << train_window)
+  input_length: 252         # 1 год
   pred_length: 21           # 1 месяц
-  patch_length: 16          # Официальное
-  stride: 8                 # Перекрывающиеся патчи
-  d_model: 128              # Официальное
-  n_heads: 16               # Официальное
-  n_layers: 3               # Официальное
-  d_ff: 512                 # Официальное
-  mask_ratio: 0.4           # Для self-supervised pretraining
-  pretrain_epochs: 10       # Официальное (self-supervised)
-  finetune_epochs: 5        # Fine-tuning prediction head
-  pretrain_lr: 0.0001       # Официальное (1e-4)
-  batch_size: 64            # Официальное
-  dropout: 0.2              # Официальное
-  use_revin: true           # Reversible Instance Normalization
+  patch_length: 16
+  stride: 8
+  d_model: 128
+  n_heads: 16
+  n_layers: 3
+  d_ff: 512
+  dropout: 0.1
+  use_revin: true
+  mask_ratio: 0.15          # Для self-supervised pretraining
+  pretrain_epochs: 20
+  finetune_epochs: 10
+  pretrain_lr: 0.005
+  batch_size: 64
 ```
 
 ---
@@ -265,23 +259,23 @@ python src/backtesting/backtest_patchtst.py
 
 ```
 # Data
-yfinance>=0.2.0
-pandas>=2.0.0
-numpy>=1.24.0
+yfinance, pandas, numpy
 
 # ML/DL
-torch>=2.0.0
+torch, pytorch-lightning
 
 # Time Series
-statsforecast>=1.6.0     # AutoARIMA
+statsforecast (AutoARIMA)
 
 # Optimization
-scipy>=1.10.0
+scipy, cvxpy
 
 # Visualization
-matplotlib>=3.7.0
+matplotlib, seaborn, plotly
 
 # Utils
-pyyaml>=6.0
-tqdm>=4.65.0
+pyyaml, tqdm, scikit-learn
+
+# Testing
+pytest
 ```
