@@ -1,7 +1,11 @@
 # VKR: PatchTST для портфельной оптимизации Марковица
 
-**Автор:** Кротов Ю.В.
-**ВУЗ:** НИУ ВШЭ
+**Сравнение методов прогнозирования доходности для портфельной оптимизации Марковица: Historical Mean, AutoARIMA, PatchTST Transformer**
+
+*Comparison of Return Forecasting Methods for Markowitz Portfolio Optimization: Historical Mean, AutoARIMA, PatchTST Transformer*
+
+**Автор:** Кротов Ю.В. (Iurii Krotov)
+**ВУЗ:** НИУ ВШЭ (HSE University)
 **Дата:** Январь 2026
 
 ---
