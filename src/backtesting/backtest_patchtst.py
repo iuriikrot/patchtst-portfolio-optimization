@@ -16,7 +16,10 @@ from pathlib import Path
 import sys
 import warnings
 import yaml
-warnings.filterwarnings('ignore')
+# Подавляем шумные warnings от библиотек, но не наши собственные (UserWarning)
+warnings.filterwarnings('ignore', category=DeprecationWarning)
+warnings.filterwarnings('ignore', category=FutureWarning)
+warnings.filterwarnings('ignore', module='torch')
 
 sys.path.append(str(Path(__file__).parent.parent))
 

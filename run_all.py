@@ -16,7 +16,11 @@ import yaml
 import json
 from datetime import datetime
 import warnings
-warnings.filterwarnings('ignore')
+# Подавляем только шумные warnings от библиотек, но не наши собственные (UserWarning)
+warnings.filterwarnings('ignore', category=DeprecationWarning)
+warnings.filterwarnings('ignore', category=FutureWarning)
+warnings.filterwarnings('ignore', module='pandas')
+warnings.filterwarnings('ignore', module='numpy')
 
 # Добавляем src в путь
 sys.path.insert(0, str(Path(__file__).parent / "src"))

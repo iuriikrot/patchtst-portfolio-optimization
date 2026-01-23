@@ -89,7 +89,7 @@ def get_data(
 def download_and_prepare_data():
     """
     Скачивает ценовую колонку из config и добавляет лог-доходности.
-    Сохраняет в data/raw/stock_data.csv
+    Сохраняет в data/raw/prices.csv и data/raw/log_returns.csv
     """
     if PRICE_COLUMN != REQUIRED_PRICE_COLUMN:
         raise ValueError(
