@@ -1,6 +1,6 @@
 # Research Results
 
-**Author:** Iurii Krotov, HSE University, Faculty of Economic Sciences
+**Author:** Iurii Krotov
 **Date:** January 2026
 
 ---
