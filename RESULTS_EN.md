@@ -42,24 +42,24 @@
 
 | Metric | Baseline 1 | StatsForecast | PatchTST | Best |
 |--------|------------|---------------|----------|------|
-| **Annual Return** | **16.08%** | 12.94% | 14.56% | Baseline 1 |
-| **Annual Volatility** | 12.83% | 13.34% | **12.63%** | PatchTST |
-| **Sharpe Ratio** | **0.93** | 0.69 | 0.83 | Baseline 1 |
-| **Calmar Ratio** | 0.66 | 0.59 | **1.07** | PatchTST |
-| **Max Drawdown** | -24.22% | -22.06% | **-13.56%** | PatchTST |
-| **Total Return** | **338.71%** | 234.23% | 284.87% | Baseline 1 |
+| **Annual Return** | **16.08%** | 13.26% | 14.07% | Baseline 1 |
+| **Annual Volatility** | 12.83% | 13.26% | **12.65%** | PatchTST |
+| **Sharpe Ratio** | **0.93** | 0.71 | 0.80 | Baseline 1 |
+| **Calmar Ratio** | 0.66 | 0.64 | **0.90** | PatchTST |
+| **Max Drawdown** | -24.22% | -20.72% | **-15.61%** | PatchTST |
+| **Total Return** | **338.71%** | 243.62% | 268.82% | Baseline 1 |
 
 ### Results Interpretation
 
-1. **By return:** Baseline 1 (historical mean) showed the highest return — 16.08% annually and 338.71% over the entire period. PatchTST came second with 14.56% annually.
+1. **By return:** Baseline 1 (historical mean) showed the highest return — 16.08% annually and 338.71% over the entire period. PatchTST came second with 14.07% annually.
 
 2. **By risk:** PatchTST demonstrated **significantly better** risk management:
-   - Minimum volatility: 12.63%
-   - **Minimum drawdown: -13.56%** (almost half of Baseline 1!)
+   - Minimum volatility: 12.65%
+   - **Minimum drawdown: -15.61%** (36% better than Baseline 1)
 
 3. **By risk/return ratio:**
-   - Sharpe Ratio: Baseline 1 leads (0.93), but PatchTST is close (0.83)
-   - **Calmar Ratio: PatchTST leads (1.07 > 1)** — return exceeds maximum drawdown
+   - Sharpe Ratio: Baseline 1 leads (0.93), but PatchTST is close (0.80)
+   - **Calmar Ratio: PatchTST leads (0.90 vs 0.66)** — 36% better than Baseline 1
 
 ---
 
@@ -67,9 +67,9 @@
 
 | Metric | Baseline 1 | StatsForecast | PatchTST |
 |--------|------------|---------------|----------|
-| **RMSE** | **0.0695** | 0.0698 | 0.0847 |
-| **MAE** | **0.0506** | 0.0510 | 0.0620 |
-| **Hit Rate** | **56.13%** | 52.70% | 51.72% |
+| **RMSE** | **0.0695** | 0.0698 | 0.0845 |
+| **MAE** | **0.0506** | 0.0510 | 0.0621 |
+| **Hit Rate** | **56.13%** | 52.62% | 50.88% |
 
 ### Interpretation
 
@@ -86,9 +86,9 @@
 **Original hypothesis:** Replacing historical means with PatchTST forecasts will improve Markowitz portfolio quality.
 
 **Result:** The hypothesis **was partially confirmed**:
-- By Sharpe Ratio: Baseline 1 leads (0.93 vs 0.83)
-- **By Calmar Ratio: PatchTST leads (1.07 vs 0.66)** — 62% improvement
-- **By Max Drawdown: PatchTST leads (-13.56% vs -24.22%)** — 44% improvement
+- By Sharpe Ratio: Baseline 1 leads (0.93 vs 0.80)
+- **By Calmar Ratio: PatchTST leads (0.90 vs 0.66)** — 36% improvement
+- **By Max Drawdown: PatchTST leads (-15.61% vs -24.22%)** — 36% improvement
 
 ### 4.2. PatchTST Advantages
 
@@ -96,11 +96,11 @@ PatchTST showed **significant advantages** in risk management:
 
 | Risk Metric | Baseline 1 | PatchTST | Improvement |
 |-------------|------------|----------|-------------|
-| Max Drawdown | -24.22% | -13.56% | **+44%** |
-| Volatility | 12.83% | 12.63% | +2% |
-| Calmar Ratio | 0.66 | 1.07 | **+62%** |
+| Max Drawdown | -24.22% | -15.61% | **+36%** |
+| Volatility | 12.83% | 12.65% | +1% |
+| Calmar Ratio | 0.66 | 0.90 | **+36%** |
 
-**Conclusion:** PatchTST forms portfolios with **almost half the drawdowns** at comparable returns.
+**Conclusion:** PatchTST forms portfolios with **significantly lower drawdowns** at comparable returns.
 
 ### 4.3. Why Does PatchTST Manage Risk Better?
 
@@ -123,8 +123,8 @@ PatchTST showed **significant advantages** in risk management:
 | Investor Goal | Recommended Approach | Rationale |
 |---------------|---------------------|-----------|
 | Maximum return | Baseline 1 | Sharpe 0.93, Return 16.08% |
-| **Minimum drawdown** | **PatchTST** | Max DD -13.56% vs -24.22% |
-| **Best Calmar** | **PatchTST** | 1.07 > 1 (return > drawdown) |
+| **Minimum drawdown** | **PatchTST** | Max DD -15.61% vs -24.22% |
+| **Best Calmar** | **PatchTST** | 0.90 vs 0.66 (+36%) |
 | Conservative strategy | PatchTST | Better risk management |
 
 **For institutional investors** with drawdown constraints, PatchTST is the **preferred choice**.
@@ -142,12 +142,12 @@ PORTFOLIO METRICS (119 periods, 2015-2024)
 
 Metric                     Baseline 1      StatsF    PatchTST
 -------------------------------------------------------------
-Annual Return                  16.08%      12.94%      14.56%
-Annual Volatility              12.83%      13.34%      12.63%
-Sharpe Ratio                     0.93        0.69        0.83
-Calmar Ratio                     0.66        0.59        1.07  ★
-Max Drawdown                  -24.22%     -22.06%     -13.56% ★
-Total Return                  338.71%     234.23%     284.87%
+Annual Return                  16.08%      13.26%      14.07%
+Annual Volatility              12.83%      13.26%      12.65%
+Sharpe Ratio                     0.93        0.71        0.80
+Calmar Ratio                     0.66        0.64        0.90  ★
+Max Drawdown                  -24.22%     -20.72%     -15.61% ★
+Total Return                  338.71%     243.62%     268.82%
 
 ★ = best result for risk management
 
@@ -157,9 +157,9 @@ FORECAST METRICS
 
 Metric                     Baseline 1      StatsF    PatchTST
 -------------------------------------------------------------
-RMSE                         0.069522    0.069789    0.084748
-MAE                          0.050634    0.051047    0.061992
-Hit Rate                       56.13%      52.70%      51.72%
+RMSE                         0.069522    0.069795    0.084494
+MAE                          0.050634    0.051044    0.062141
+Hit Rate                       56.13%      52.62%      50.88%
 ```
 
 ---
@@ -184,8 +184,8 @@ Hit Rate                       56.13%      52.70%      51.72%
 
 The study showed that **PatchTST is the best choice for risk-oriented portfolio management**:
 
-- **Calmar Ratio 1.07** — the only method with return/drawdown ratio greater than 1
-- **Max Drawdown -13.56%** — almost half of the classical approach
-- **Sharpe Ratio 0.83** — close to the leader (0.93)
+- **Calmar Ratio 0.90** — 36% better than the classical approach (0.66)
+- **Max Drawdown -15.61%** — 36% better than Baseline 1 (-24.22%)
+- **Sharpe Ratio 0.80** — close to the leader (0.93)
 
 For investors prioritizing **capital protection** over return maximization, PatchTST is the preferred method for estimating expected returns in Markowitz portfolio optimization.

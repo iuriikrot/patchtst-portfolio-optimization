@@ -1,0 +1,55 @@
+{
+  "timestamp": "20260123_231803",
+  "config": {
+    "train_window": 1260,
+    "test_window": 21,
+    "risk_free_rate": 0.04,
+    "patchtst_mode": "full"
+  },
+  "metrics": {
+    "baseline1": {
+      "Annual Return": 0.1608005745490284,
+      "Annual Volatility": 0.1283492805211975,
+      "Sharpe Ratio": 0.9264598253251473,
+      "Calmar Ratio": 0.664003883757117,
+      "Max Drawdown": -0.24216812353442035,
+      "Total Return": 3.3871216392728165,
+      "Num Periods": 119
+    },
+    "baseline2": {
+      "Annual Return": 0.13255396909086015,
+      "Annual Volatility": 0.1326098934794672,
+      "Sharpe Ratio": 0.7131560925259053,
+      "Calmar Ratio": 0.6396491275402016,
+      "Max Drawdown": -0.20722918766512222,
+      "Total Return": 2.4362452722621213,
+      "Num Periods": 119
+    },
+    "patchtst": {
+      "Annual Return": 0.14066473562908532,
+      "Annual Volatility": 0.12650466003728808,
+      "Sharpe Ratio": 0.7983782504278542,
+      "Calmar Ratio": 0.9012939723163196,
+      "Max Drawdown": -0.15606976186424268,
+      "Total Return": 2.6882214112731946,
+      "Num Periods": 119
+    }
+  },
+  "forecast_metrics": {
+    "baseline1": {
+      "rmse": 0.06952216737221042,
+      "mae": 0.050634285234742046,
+      "hit_rate": 0.561344537815126
+    },
+    "baseline2": {
+      "rmse": 0.06979510692084978,
+      "mae": 0.051044304830713996,
+      "hit_rate": 0.5261820030503305
+    },
+    "patchtst": {
+      "rmse": 0.0844935214868541,
+      "mae": 0.062140760807419135,
+      "hit_rate": 0.5088235294117647
+    }
+  }
+}

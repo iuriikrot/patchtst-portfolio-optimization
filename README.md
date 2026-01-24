@@ -161,16 +161,16 @@ python3 src/backtesting/backtest_patchtst.py
 
 ## Результаты
 
-**PatchTST — лучший по управлению рисками** (Calmar Ratio > 1, минимальная просадка):
+**PatchTST — лучший по управлению рисками** (минимальная просадка, высокий Calmar):
 
 | Метрика | Baseline 1 | StatsForecast | PatchTST | Лучший |
 |---------|------------|---------------|----------|--------|
-| Annual Return | **16.08%** | 12.94% | 14.56% | Baseline 1 |
-| Sharpe Ratio | **0.93** | 0.69 | 0.83 | Baseline 1 |
-| Calmar Ratio | 0.66 | 0.59 | **1.07** | PatchTST |
-| Max Drawdown | -24.22% | -22.06% | **-13.56%** | PatchTST |
+| Annual Return | **16.08%** | 13.26% | 14.07% | Baseline 1 |
+| Sharpe Ratio | **0.93** | 0.71 | 0.80 | Baseline 1 |
+| Calmar Ratio | 0.66 | 0.64 | **0.90** | PatchTST |
+| Max Drawdown | -24.22% | -20.72% | **-15.61%** | PatchTST |
 
-![Сравнение кумулятивных доходностей](results/cumulative_returns_20260122_181947.png)
+![Сравнение кумулятивных доходностей](results/cumulative_returns_20260123_231803.png)
 
 **Подробный анализ:** [RESULTS.md](RESULTS.md)
 
