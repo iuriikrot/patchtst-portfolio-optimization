@@ -1,0 +1,1135 @@
+=== Прогон 20260612_091600, запущен 2026-06-12 09:16:00 ===
+Лог прогона: /Users/iurii/Documents/ВКР/VKR_Patch/results/run_log_20260612_091600.txt
+Параметры берутся из config/config.yaml
+Скачать данные заново? [y/N]: Выберите модели для запуска:
+  1 - Baseline 1 (Историческое среднее)
+  2 - StatsForecast AutoARIMA
+  3 - PatchTST
+  4 - PatchTST + ICEEMDAN
+Введите номера через запятую (Enter = все): ============================================================
+ЗАПУСК ВСЕХ МОДЕЛЕЙ
+============================================================
+Данные: 2000-01-04 — 2026-01-14
+Акций: 20
+Train: 1260 дней, Test: 21 дней
+PatchTST режим: FULL
+Издержки: 0.0500% на единицу оборота
+Validation/holdout граница: 2014-12-31
+
+[1/4] Baseline 1 (Hist Mean)...
+Всего дней: 6547
+Train окно: 1260 дней (5 лет)
+Test окно: 21 дней (1 месяц)
+Шаг 1: 2005-01-10 | top-3: UNH:20.0%, MMM:17.9%, NEM:16.0%, std=0.067
+Шаг 20: 2006-08-10 | top-3: AAPL:20.0%, NEM:20.0%, UNH:20.0%, std=0.072
+/Users/iurii/Library/Python/3.9/lib/python/site-packages/scipy/optimize/_slsqp_py.py:437: RuntimeWarning: Values in x were outside bounds during a minimize step, clipping to bounds
+  fx = wrapped_fun(x)
+/Users/iurii/Library/Python/3.9/lib/python/site-packages/scipy/optimize/_slsqp_py.py:441: RuntimeWarning: Values in x were outside bounds during a minimize step, clipping to bounds
+  g = append(wrapped_grad(x), 0.0)
+/Users/iurii/Library/Python/3.9/lib/python/site-packages/scipy/optimize/_slsqp_py.py:495: RuntimeWarning: Values in x were outside bounds during a minimize step, clipping to bounds
+  a_eq = vstack([con['jac'](x, *con['args'])
+/Users/iurii/Library/Python/3.9/lib/python/site-packages/scipy/optimize/_slsqp_py.py:437: RuntimeWarning: Values in x were outside bounds during a minimize step, clipping to bounds
+  fx = wrapped_fun(x)
+Шаг 40: 2008-04-14 | top-3: CVX:20.0%, DUK:20.0%, MCD:20.0%, std=0.075
+/Users/iurii/Library/Python/3.9/lib/python/site-packages/scipy/optimize/_slsqp_py.py:437: RuntimeWarning: Values in x were outside bounds during a minimize step, clipping to bounds
+  fx = wrapped_fun(x)
+/Users/iurii/Library/Python/3.9/lib/python/site-packages/scipy/optimize/_slsqp_py.py:441: RuntimeWarning: Values in x were outside bounds during a minimize step, clipping to bounds
+  g = append(wrapped_grad(x), 0.0)
+/Users/iurii/Library/Python/3.9/lib/python/site-packages/scipy/optimize/_slsqp_py.py:495: RuntimeWarning: Values in x were outside bounds during a minimize step, clipping to bounds
+  a_eq = vstack([con['jac'](x, *con['args'])
+Шаг 60: 2009-12-10 | top-3: KO:20.0%, MCD:20.0%, DUK:20.0%, std=0.075
+/Users/iurii/Library/Python/3.9/lib/python/site-packages/scipy/optimize/_slsqp_py.py:437: RuntimeWarning: Values in x were outside bounds during a minimize step, clipping to bounds
+  fx = wrapped_fun(x)
+/Users/iurii/Library/Python/3.9/lib/python/site-packages/scipy/optimize/_slsqp_py.py:441: RuntimeWarning: Values in x were outside bounds during a minimize step, clipping to bounds
+  g = append(wrapped_grad(x), 0.0)
+/Users/iurii/Library/Python/3.9/lib/python/site-packages/scipy/optimize/_slsqp_py.py:495: RuntimeWarning: Values in x were outside bounds during a minimize step, clipping to bounds
+  a_eq = vstack([con['jac'](x, *con['args'])
+/Users/iurii/Library/Python/3.9/lib/python/site-packages/scipy/optimize/_slsqp_py.py:437: RuntimeWarning: Values in x were outside bounds during a minimize step, clipping to bounds
+  fx = wrapped_fun(x)
+/Users/iurii/Library/Python/3.9/lib/python/site-packages/scipy/optimize/_slsqp_py.py:441: RuntimeWarning: Values in x were outside bounds during a minimize step, clipping to bounds
+  g = append(wrapped_grad(x), 0.0)
+/Users/iurii/Library/Python/3.9/lib/python/site-packages/scipy/optimize/_slsqp_py.py:495: RuntimeWarning: Values in x were outside bounds during a minimize step, clipping to bounds
+  a_eq = vstack([con['jac'](x, *con['args'])
+/Users/iurii/Library/Python/3.9/lib/python/site-packages/scipy/optimize/_slsqp_py.py:437: RuntimeWarning: Values in x were outside bounds during a minimize step, clipping to bounds
+  fx = wrapped_fun(x)
+/Users/iurii/Library/Python/3.9/lib/python/site-packages/scipy/optimize/_slsqp_py.py:441: RuntimeWarning: Values in x were outside bounds during a minimize step, clipping to bounds
+  g = append(wrapped_grad(x), 0.0)
+/Users/iurii/Library/Python/3.9/lib/python/site-packages/scipy/optimize/_slsqp_py.py:495: RuntimeWarning: Values in x were outside bounds during a minimize step, clipping to bounds
+  a_eq = vstack([con['jac'](x, *con['args'])
+Шаг 80: 2011-08-11 | top-3: KO:20.0%, MCD:20.0%, AAPL:20.0%, std=0.072
+/Users/iurii/Library/Python/3.9/lib/python/site-packages/scipy/optimize/_slsqp_py.py:437: RuntimeWarning: Values in x were outside bounds during a minimize step, clipping to bounds
+  fx = wrapped_fun(x)
+/Users/iurii/Library/Python/3.9/lib/python/site-packages/scipy/optimize/_slsqp_py.py:441: RuntimeWarning: Values in x were outside bounds during a minimize step, clipping to bounds
+  g = append(wrapped_grad(x), 0.0)
+/Users/iurii/Library/Python/3.9/lib/python/site-packages/scipy/optimize/_slsqp_py.py:495: RuntimeWarning: Values in x were outside bounds during a minimize step, clipping to bounds
+  a_eq = vstack([con['jac'](x, *con['args'])
+/Users/iurii/Library/Python/3.9/lib/python/site-packages/scipy/optimize/_slsqp_py.py:437: RuntimeWarning: Values in x were outside bounds during a minimize step, clipping to bounds
+  fx = wrapped_fun(x)
+/Users/iurii/Library/Python/3.9/lib/python/site-packages/scipy/optimize/_slsqp_py.py:441: RuntimeWarning: Values in x were outside bounds during a minimize step, clipping to bounds
+  g = append(wrapped_grad(x), 0.0)
+/Users/iurii/Library/Python/3.9/lib/python/site-packages/scipy/optimize/_slsqp_py.py:495: RuntimeWarning: Values in x were outside bounds during a minimize step, clipping to bounds
+  a_eq = vstack([con['jac'](x, *con['args'])
+Шаг 100: 2013-04-16 | top-3: AAPL:20.0%, HD:20.0%, MCD:20.0%, std=0.073
+Шаг 120: 2014-12-12 | top-3: AAPL:20.0%, UNH:20.0%, HD:20.0%, std=0.075
+/Users/iurii/Library/Python/3.9/lib/python/site-packages/scipy/optimize/_slsqp_py.py:437: RuntimeWarning: Values in x were outside bounds during a minimize step, clipping to bounds
+  fx = wrapped_fun(x)
+/Users/iurii/Library/Python/3.9/lib/python/site-packages/scipy/optimize/_slsqp_py.py:441: RuntimeWarning: Values in x were outside bounds during a minimize step, clipping to bounds
+  g = append(wrapped_grad(x), 0.0)
+/Users/iurii/Library/Python/3.9/lib/python/site-packages/scipy/optimize/_slsqp_py.py:495: RuntimeWarning: Values in x were outside bounds during a minimize step, clipping to bounds
+  a_eq = vstack([con['jac'](x, *con['args'])
+Шаг 140: 2016-08-15 | top-3: HD:20.0%, UNH:20.0%, JNJ:20.0%, std=0.073
+/Users/iurii/Library/Python/3.9/lib/python/site-packages/scipy/optimize/_slsqp_py.py:437: RuntimeWarning: Values in x were outside bounds during a minimize step, clipping to bounds
+  fx = wrapped_fun(x)
+/Users/iurii/Library/Python/3.9/lib/python/site-packages/scipy/optimize/_slsqp_py.py:441: RuntimeWarning: Values in x were outside bounds during a minimize step, clipping to bounds
+  g = append(wrapped_grad(x), 0.0)
+/Users/iurii/Library/Python/3.9/lib/python/site-packages/scipy/optimize/_slsqp_py.py:495: RuntimeWarning: Values in x were outside bounds during a minimize step, clipping to bounds
+  a_eq = vstack([con['jac'](x, *con['args'])
+/Users/iurii/Library/Python/3.9/lib/python/site-packages/scipy/optimize/_slsqp_py.py:437: RuntimeWarning: Values in x were outside bounds during a minimize step, clipping to bounds
+  fx = wrapped_fun(x)
+/Users/iurii/Library/Python/3.9/lib/python/site-packages/scipy/optimize/_slsqp_py.py:441: RuntimeWarning: Values in x were outside bounds during a minimize step, clipping to bounds
+  g = append(wrapped_grad(x), 0.0)
+/Users/iurii/Library/Python/3.9/lib/python/site-packages/scipy/optimize/_slsqp_py.py:495: RuntimeWarning: Values in x were outside bounds during a minimize step, clipping to bounds
+  a_eq = vstack([con['jac'](x, *con['args'])
+Шаг 160: 2018-04-17 | top-3: UNH:20.0%, HD:20.0%, MSFT:20.0%, std=0.073
+/Users/iurii/Library/Python/3.9/lib/python/site-packages/scipy/optimize/_slsqp_py.py:437: RuntimeWarning: Values in x were outside bounds during a minimize step, clipping to bounds
+  fx = wrapped_fun(x)
+/Users/iurii/Library/Python/3.9/lib/python/site-packages/scipy/optimize/_slsqp_py.py:441: RuntimeWarning: Values in x were outside bounds during a minimize step, clipping to bounds
+  g = append(wrapped_grad(x), 0.0)
+/Users/iurii/Library/Python/3.9/lib/python/site-packages/scipy/optimize/_slsqp_py.py:495: RuntimeWarning: Values in x were outside bounds during a minimize step, clipping to bounds
+  a_eq = vstack([con['jac'](x, *con['args'])
+Шаг 180: 2019-12-16 | top-3: UNH:20.0%, MSFT:20.0%, MCD:20.0%, std=0.069
+/Users/iurii/Library/Python/3.9/lib/python/site-packages/scipy/optimize/_slsqp_py.py:437: RuntimeWarning: Values in x were outside bounds during a minimize step, clipping to bounds
+  fx = wrapped_fun(x)
+/Users/iurii/Library/Python/3.9/lib/python/site-packages/scipy/optimize/_slsqp_py.py:441: RuntimeWarning: Values in x were outside bounds during a minimize step, clipping to bounds
+  g = append(wrapped_grad(x), 0.0)
+/Users/iurii/Library/Python/3.9/lib/python/site-packages/scipy/optimize/_slsqp_py.py:495: RuntimeWarning: Values in x were outside bounds during a minimize step, clipping to bounds
+  a_eq = vstack([con['jac'](x, *con['args'])
+Шаг 200: 2021-08-17 | top-3: AAPL:20.0%, MSFT:20.0%, UNH:17.5%, std=0.066
+/Users/iurii/Library/Python/3.9/lib/python/site-packages/scipy/optimize/_slsqp_py.py:437: RuntimeWarning: Values in x were outside bounds during a minimize step, clipping to bounds
+  fx = wrapped_fun(x)
+/Users/iurii/Library/Python/3.9/lib/python/site-packages/scipy/optimize/_slsqp_py.py:441: RuntimeWarning: Values in x were outside bounds during a minimize step, clipping to bounds
+  g = append(wrapped_grad(x), 0.0)
+/Users/iurii/Library/Python/3.9/lib/python/site-packages/scipy/optimize/_slsqp_py.py:495: RuntimeWarning: Values in x were outside bounds during a minimize step, clipping to bounds
+  a_eq = vstack([con['jac'](x, *con['args'])
+/Users/iurii/Library/Python/3.9/lib/python/site-packages/scipy/optimize/_slsqp_py.py:437: RuntimeWarning: Values in x were outside bounds during a minimize step, clipping to bounds
+  fx = wrapped_fun(x)
+/Users/iurii/Library/Python/3.9/lib/python/site-packages/scipy/optimize/_slsqp_py.py:441: RuntimeWarning: Values in x were outside bounds during a minimize step, clipping to bounds
+  g = append(wrapped_grad(x), 0.0)
+/Users/iurii/Library/Python/3.9/lib/python/site-packages/scipy/optimize/_slsqp_py.py:495: RuntimeWarning: Values in x were outside bounds during a minimize step, clipping to bounds
+  a_eq = vstack([con['jac'](x, *con['args'])
+/Users/iurii/Library/Python/3.9/lib/python/site-packages/scipy/optimize/_slsqp_py.py:437: RuntimeWarning: Values in x were outside bounds during a minimize step, clipping to bounds
+  fx = wrapped_fun(x)
+/Users/iurii/Library/Python/3.9/lib/python/site-packages/scipy/optimize/_slsqp_py.py:441: RuntimeWarning: Values in x were outside bounds during a minimize step, clipping to bounds
+  g = append(wrapped_grad(x), 0.0)
+/Users/iurii/Library/Python/3.9/lib/python/site-packages/scipy/optimize/_slsqp_py.py:495: RuntimeWarning: Values in x were outside bounds during a minimize step, clipping to bounds
+  a_eq = vstack([con['jac'](x, *con['args'])
+Шаг 220: 2023-04-19 | top-3: AAPL:20.0%, MSFT:20.0%, PG:20.0%, std=0.072
+Шаг 240: 2024-12-18 | top-3: GS:20.0%, CAT:20.0%, MSFT:20.0%, std=0.075
+/Users/iurii/Library/Python/3.9/lib/python/site-packages/scipy/optimize/_slsqp_py.py:437: RuntimeWarning: Values in x were outside bounds during a minimize step, clipping to bounds
+  fx = wrapped_fun(x)
+/Users/iurii/Library/Python/3.9/lib/python/site-packages/scipy/optimize/_slsqp_py.py:441: RuntimeWarning: Values in x were outside bounds during a minimize step, clipping to bounds
+  g = append(wrapped_grad(x), 0.0)
+/Users/iurii/Library/Python/3.9/lib/python/site-packages/scipy/optimize/_slsqp_py.py:495: RuntimeWarning: Values in x were outside bounds during a minimize step, clipping to bounds
+  a_eq = vstack([con['jac'](x, *con['args'])
+
+Всего периодов: 251
+      Sharpe: 0.73 (net: 0.72), оборот: 18.2%/мес
+      RMSE: 0.073829, MAE: 0.052562, Hit Rate: 56.73%
+
+[2/4] Baseline 2 (StatsForecast)...
+Всего дней: 6547
+Train окно: 1260 дней
+Test окно: 21 дней
+Акций: 20
+StatsForecast AutoARIMA: max_p=3, max_d=1, max_q=3, stepwise=True
+
+Запуск бэктеста...
+
+Шаг 1: 2005-01-10
+  μ range: [-0.0282, 1.1095]
+  top-3: AAPL:20.0%, UNH:20.0%, MMM:20.0%, std=0.072
+/Users/iurii/Library/Python/3.9/lib/python/site-packages/scipy/optimize/_slsqp_py.py:437: RuntimeWarning: Values in x were outside bounds during a minimize step, clipping to bounds
+  fx = wrapped_fun(x)
+Шаг 10: 2005-10-10
+  μ range: [-0.0738, 1.0551]
+  top-3: AAPL:20.0%, PG:20.0%, UNH:17.6%, std=0.069
+Шаг 20: 2006-08-10
+  μ range: [-0.1457, 0.3718]
+  top-3: AAPL:20.0%, UNH:20.0%, NEM:17.4%, std=0.071
+Шаг 30: 2007-06-13
+  μ range: [-0.0485, 0.4833]
+  top-3: AAPL:20.0%, WFC:20.0%, UNH:20.0%, std=0.069
+/Users/iurii/Library/Python/3.9/lib/python/site-packages/scipy/optimize/_slsqp_py.py:437: RuntimeWarning: Values in x were outside bounds during a minimize step, clipping to bounds
+  fx = wrapped_fun(x)
+/Users/iurii/Library/Python/3.9/lib/python/site-packages/scipy/optimize/_slsqp_py.py:441: RuntimeWarning: Values in x were outside bounds during a minimize step, clipping to bounds
+  g = append(wrapped_grad(x), 0.0)
+/Users/iurii/Library/Python/3.9/lib/python/site-packages/scipy/optimize/_slsqp_py.py:495: RuntimeWarning: Values in x were outside bounds during a minimize step, clipping to bounds
+  a_eq = vstack([con['jac'](x, *con['args'])
+Шаг 40: 2008-04-14
+  μ range: [-0.3755, 0.6064]
+  top-3: MCD:20.0%, WFC:20.0%, AAPL:20.0%, std=0.072
+/Users/iurii/Library/Python/3.9/lib/python/site-packages/scipy/optimize/_slsqp_py.py:437: RuntimeWarning: Values in x were outside bounds during a minimize step, clipping to bounds
+  fx = wrapped_fun(x)
+/Users/iurii/Library/Python/3.9/lib/python/site-packages/scipy/optimize/_slsqp_py.py:441: RuntimeWarning: Values in x were outside bounds during a minimize step, clipping to bounds
+  g = append(wrapped_grad(x), 0.0)
+/Users/iurii/Library/Python/3.9/lib/python/site-packages/scipy/optimize/_slsqp_py.py:495: RuntimeWarning: Values in x were outside bounds during a minimize step, clipping to bounds
+  a_eq = vstack([con['jac'](x, *con['args'])
+/Users/iurii/Library/Python/3.9/lib/python/site-packages/scipy/optimize/_slsqp_py.py:437: RuntimeWarning: Values in x were outside bounds during a minimize step, clipping to bounds
+  fx = wrapped_fun(x)
+/Users/iurii/Library/Python/3.9/lib/python/site-packages/scipy/optimize/_slsqp_py.py:441: RuntimeWarning: Values in x were outside bounds during a minimize step, clipping to bounds
+  g = append(wrapped_grad(x), 0.0)
+/Users/iurii/Library/Python/3.9/lib/python/site-packages/scipy/optimize/_slsqp_py.py:495: RuntimeWarning: Values in x were outside bounds during a minimize step, clipping to bounds
+  a_eq = vstack([con['jac'](x, *con['args'])
+Шаг 50: 2009-02-11
+  μ range: [-0.5980, 0.4688]
+  top-3: XOM:20.0%, MCD:20.0%, WFC:20.0%, std=0.072
+/Users/iurii/Library/Python/3.9/lib/python/site-packages/scipy/optimize/_slsqp_py.py:437: RuntimeWarning: Values in x were outside bounds during a minimize step, clipping to bounds
+  fx = wrapped_fun(x)
+/Users/iurii/Library/Python/3.9/lib/python/site-packages/scipy/optimize/_slsqp_py.py:441: RuntimeWarning: Values in x were outside bounds during a minimize step, clipping to bounds
+  g = append(wrapped_grad(x), 0.0)
+/Users/iurii/Library/Python/3.9/lib/python/site-packages/scipy/optimize/_slsqp_py.py:495: RuntimeWarning: Values in x were outside bounds during a minimize step, clipping to bounds
+  a_eq = vstack([con['jac'](x, *con['args'])
+/Users/iurii/Library/Python/3.9/lib/python/site-packages/scipy/optimize/_slsqp_py.py:437: RuntimeWarning: Values in x were outside bounds during a minimize step, clipping to bounds
+  fx = wrapped_fun(x)
+/Users/iurii/Library/Python/3.9/lib/python/site-packages/scipy/optimize/_slsqp_py.py:441: RuntimeWarning: Values in x were outside bounds during a minimize step, clipping to bounds
+  g = append(wrapped_grad(x), 0.0)
+/Users/iurii/Library/Python/3.9/lib/python/site-packages/scipy/optimize/_slsqp_py.py:495: RuntimeWarning: Values in x were outside bounds during a minimize step, clipping to bounds
+  a_eq = vstack([con['jac'](x, *con['args'])
+Шаг 60: 2009-12-10
+  μ range: [-0.1522, 0.3475]
+  top-3: WFC:20.0%, AAPL:20.0%, MCD:20.0%, std=0.073
+/Users/iurii/Library/Python/3.9/lib/python/site-packages/scipy/optimize/_slsqp_py.py:437: RuntimeWarning: Values in x were outside bounds during a minimize step, clipping to bounds
+  fx = wrapped_fun(x)
+/Users/iurii/Library/Python/3.9/lib/python/site-packages/scipy/optimize/_slsqp_py.py:441: RuntimeWarning: Values in x were outside bounds during a minimize step, clipping to bounds
+  g = append(wrapped_grad(x), 0.0)
+/Users/iurii/Library/Python/3.9/lib/python/site-packages/scipy/optimize/_slsqp_py.py:495: RuntimeWarning: Values in x were outside bounds during a minimize step, clipping to bounds
+  a_eq = vstack([con['jac'](x, *con['args'])
+/Users/iurii/Library/Python/3.9/lib/python/site-packages/scipy/optimize/_slsqp_py.py:437: RuntimeWarning: Values in x were outside bounds during a minimize step, clipping to bounds
+  fx = wrapped_fun(x)
+/Users/iurii/Library/Python/3.9/lib/python/site-packages/scipy/optimize/_slsqp_py.py:441: RuntimeWarning: Values in x were outside bounds during a minimize step, clipping to bounds
+  g = append(wrapped_grad(x), 0.0)
+/Users/iurii/Library/Python/3.9/lib/python/site-packages/scipy/optimize/_slsqp_py.py:495: RuntimeWarning: Values in x were outside bounds during a minimize step, clipping to bounds
+  a_eq = vstack([con['jac'](x, *con['args'])
+Шаг 70: 2010-10-12
+  μ range: [-0.0486, 0.3303]
+  top-3: AAPL:20.0%, JNJ:20.0%, MCD:20.0%, std=0.068
+/Users/iurii/Library/Python/3.9/lib/python/site-packages/scipy/optimize/_slsqp_py.py:437: RuntimeWarning: Values in x were outside bounds during a minimize step, clipping to bounds
+  fx = wrapped_fun(x)
+/Users/iurii/Library/Python/3.9/lib/python/site-packages/scipy/optimize/_slsqp_py.py:441: RuntimeWarning: Values in x were outside bounds during a minimize step, clipping to bounds
+  g = append(wrapped_grad(x), 0.0)
+/Users/iurii/Library/Python/3.9/lib/python/site-packages/scipy/optimize/_slsqp_py.py:495: RuntimeWarning: Values in x were outside bounds during a minimize step, clipping to bounds
+  a_eq = vstack([con['jac'](x, *con['args'])
+/Users/iurii/Library/Python/3.9/lib/python/site-packages/scipy/optimize/_slsqp_py.py:437: RuntimeWarning: Values in x were outside bounds during a minimize step, clipping to bounds
+  fx = wrapped_fun(x)
+/Users/iurii/Library/Python/3.9/lib/python/site-packages/scipy/optimize/_slsqp_py.py:441: RuntimeWarning: Values in x were outside bounds during a minimize step, clipping to bounds
+  g = append(wrapped_grad(x), 0.0)
+/Users/iurii/Library/Python/3.9/lib/python/site-packages/scipy/optimize/_slsqp_py.py:495: RuntimeWarning: Values in x were outside bounds during a minimize step, clipping to bounds
+  a_eq = vstack([con['jac'](x, *con['args'])
+/Users/iurii/Library/Python/3.9/lib/python/site-packages/scipy/optimize/_slsqp_py.py:437: RuntimeWarning: Values in x were outside bounds during a minimize step, clipping to bounds
+  fx = wrapped_fun(x)
+/Users/iurii/Library/Python/3.9/lib/python/site-packages/scipy/optimize/_slsqp_py.py:441: RuntimeWarning: Values in x were outside bounds during a minimize step, clipping to bounds
+  g = append(wrapped_grad(x), 0.0)
+/Users/iurii/Library/Python/3.9/lib/python/site-packages/scipy/optimize/_slsqp_py.py:495: RuntimeWarning: Values in x were outside bounds during a minimize step, clipping to bounds
+  a_eq = vstack([con['jac'](x, *con['args'])
+Шаг 80: 2011-08-11
+  μ range: [-0.0615, 0.4808]
+  top-3: AAPL:20.0%, MCD:20.0%, JPM:20.0%, std=0.070
+/Users/iurii/Library/Python/3.9/lib/python/site-packages/scipy/optimize/_slsqp_py.py:437: RuntimeWarning: Values in x were outside bounds during a minimize step, clipping to bounds
+  fx = wrapped_fun(x)
+/Users/iurii/Library/Python/3.9/lib/python/site-packages/scipy/optimize/_slsqp_py.py:441: RuntimeWarning: Values in x were outside bounds during a minimize step, clipping to bounds
+  g = append(wrapped_grad(x), 0.0)
+/Users/iurii/Library/Python/3.9/lib/python/site-packages/scipy/optimize/_slsqp_py.py:495: RuntimeWarning: Values in x were outside bounds during a minimize step, clipping to bounds
+  a_eq = vstack([con['jac'](x, *con['args'])
+/Users/iurii/Library/Python/3.9/lib/python/site-packages/scipy/optimize/_slsqp_py.py:437: RuntimeWarning: Values in x were outside bounds during a minimize step, clipping to bounds
+  fx = wrapped_fun(x)
+/Users/iurii/Library/Python/3.9/lib/python/site-packages/scipy/optimize/_slsqp_py.py:441: RuntimeWarning: Values in x were outside bounds during a minimize step, clipping to bounds
+  g = append(wrapped_grad(x), 0.0)
+/Users/iurii/Library/Python/3.9/lib/python/site-packages/scipy/optimize/_slsqp_py.py:495: RuntimeWarning: Values in x were outside bounds during a minimize step, clipping to bounds
+  a_eq = vstack([con['jac'](x, *con['args'])
+/Users/iurii/Library/Python/3.9/lib/python/site-packages/scipy/optimize/_slsqp_py.py:437: RuntimeWarning: Values in x were outside bounds during a minimize step, clipping to bounds
+  fx = wrapped_fun(x)
+/Users/iurii/Library/Python/3.9/lib/python/site-packages/scipy/optimize/_slsqp_py.py:441: RuntimeWarning: Values in x were outside bounds during a minimize step, clipping to bounds
+  g = append(wrapped_grad(x), 0.0)
+/Users/iurii/Library/Python/3.9/lib/python/site-packages/scipy/optimize/_slsqp_py.py:495: RuntimeWarning: Values in x were outside bounds during a minimize step, clipping to bounds
+  a_eq = vstack([con['jac'](x, *con['args'])
+Шаг 90: 2012-06-12
+  μ range: [-0.0533, 0.3075]
+  top-3: AAPL:20.0%, MCD:20.0%, JNJ:20.0%, std=0.075
+/Users/iurii/Library/Python/3.9/lib/python/site-packages/scipy/optimize/_slsqp_py.py:437: RuntimeWarning: Values in x were outside bounds during a minimize step, clipping to bounds
+  fx = wrapped_fun(x)
+/Users/iurii/Library/Python/3.9/lib/python/site-packages/scipy/optimize/_slsqp_py.py:441: RuntimeWarning: Values in x were outside bounds during a minimize step, clipping to bounds
+  g = append(wrapped_grad(x), 0.0)
+/Users/iurii/Library/Python/3.9/lib/python/site-packages/scipy/optimize/_slsqp_py.py:495: RuntimeWarning: Values in x were outside bounds during a minimize step, clipping to bounds
+  a_eq = vstack([con['jac'](x, *con['args'])
+Шаг 100: 2013-04-16
+  μ range: [-0.0630, 0.2143]
+  top-3: XOM:20.0%, MCD:20.0%, VZ:20.0%, std=0.075
+Шаг 110: 2014-02-13
+  μ range: [-0.0120, 0.4173]
+  top-3: AAPL:20.0%, HD:20.0%, DUK:20.0%, std=0.067
+Шаг 120: 2014-12-12
+  μ range: [-0.0579, 0.2856]
+  top-3: AAPL:20.0%, UNH:20.0%, DUK:20.0%, std=0.075
+/Users/iurii/Library/Python/3.9/lib/python/site-packages/scipy/optimize/_slsqp_py.py:437: RuntimeWarning: Values in x were outside bounds during a minimize step, clipping to bounds
+  fx = wrapped_fun(x)
+/Users/iurii/Library/Python/3.9/lib/python/site-packages/scipy/optimize/_slsqp_py.py:441: RuntimeWarning: Values in x were outside bounds during a minimize step, clipping to bounds
+  g = append(wrapped_grad(x), 0.0)
+/Users/iurii/Library/Python/3.9/lib/python/site-packages/scipy/optimize/_slsqp_py.py:495: RuntimeWarning: Values in x were outside bounds during a minimize step, clipping to bounds
+  a_eq = vstack([con['jac'](x, *con['args'])
+Шаг 130: 2015-10-14
+  μ range: [-0.0060, 0.2700]
+  top-3: VZ:20.0%, UNH:20.0%, HD:20.0%, std=0.069
+/Users/iurii/Library/Python/3.9/lib/python/site-packages/scipy/optimize/_slsqp_py.py:437: RuntimeWarning: Values in x were outside bounds during a minimize step, clipping to bounds
+  fx = wrapped_fun(x)
+/Users/iurii/Library/Python/3.9/lib/python/site-packages/scipy/optimize/_slsqp_py.py:441: RuntimeWarning: Values in x were outside bounds during a minimize step, clipping to bounds
+  g = append(wrapped_grad(x), 0.0)
+/Users/iurii/Library/Python/3.9/lib/python/site-packages/scipy/optimize/_slsqp_py.py:495: RuntimeWarning: Values in x were outside bounds during a minimize step, clipping to bounds
+  a_eq = vstack([con['jac'](x, *con['args'])
+/Users/iurii/Library/Python/3.9/lib/python/site-packages/scipy/optimize/_slsqp_py.py:437: RuntimeWarning: Values in x were outside bounds during a minimize step, clipping to bounds
+  fx = wrapped_fun(x)
+/Users/iurii/Library/Python/3.9/lib/python/site-packages/scipy/optimize/_slsqp_py.py:441: RuntimeWarning: Values in x were outside bounds during a minimize step, clipping to bounds
+  g = append(wrapped_grad(x), 0.0)
+/Users/iurii/Library/Python/3.9/lib/python/site-packages/scipy/optimize/_slsqp_py.py:495: RuntimeWarning: Values in x were outside bounds during a minimize step, clipping to bounds
+  a_eq = vstack([con['jac'](x, *con['args'])
+Шаг 140: 2016-08-15
+  μ range: [-0.0156, 0.3638]
+  top-3: UNH:20.0%, PFE:20.0%, HD:20.0%, std=0.069
+/Users/iurii/Library/Python/3.9/lib/python/site-packages/scipy/optimize/_slsqp_py.py:437: RuntimeWarning: Values in x were outside bounds during a minimize step, clipping to bounds
+  fx = wrapped_fun(x)
+/Users/iurii/Library/Python/3.9/lib/python/site-packages/scipy/optimize/_slsqp_py.py:441: RuntimeWarning: Values in x were outside bounds during a minimize step, clipping to bounds
+  g = append(wrapped_grad(x), 0.0)
+/Users/iurii/Library/Python/3.9/lib/python/site-packages/scipy/optimize/_slsqp_py.py:495: RuntimeWarning: Values in x were outside bounds during a minimize step, clipping to bounds
+  a_eq = vstack([con['jac'](x, *con['args'])
+/Users/iurii/Library/Python/3.9/lib/python/site-packages/scipy/optimize/_slsqp_py.py:437: RuntimeWarning: Values in x were outside bounds during a minimize step, clipping to bounds
+  fx = wrapped_fun(x)
+/Users/iurii/Library/Python/3.9/lib/python/site-packages/scipy/optimize/_slsqp_py.py:441: RuntimeWarning: Values in x were outside bounds during a minimize step, clipping to bounds
+  g = append(wrapped_grad(x), 0.0)
+/Users/iurii/Library/Python/3.9/lib/python/site-packages/scipy/optimize/_slsqp_py.py:495: RuntimeWarning: Values in x were outside bounds during a minimize step, clipping to bounds
+  a_eq = vstack([con['jac'](x, *con['args'])
+Шаг 150: 2017-06-15
+  μ range: [-0.1017, 0.2441]
+  top-3: JNJ:20.0%, MMM:20.0%, HD:20.0%, std=0.068
+Шаг 160: 2018-04-17
+  μ range: [-0.0548, 0.2363]
+  top-3: AAPL:20.0%, UNH:20.0%, HD:20.0%, std=0.069
+/Users/iurii/Library/Python/3.9/lib/python/site-packages/scipy/optimize/_slsqp_py.py:437: RuntimeWarning: Values in x were outside bounds during a minimize step, clipping to bounds
+  fx = wrapped_fun(x)
+/Users/iurii/Library/Python/3.9/lib/python/site-packages/scipy/optimize/_slsqp_py.py:441: RuntimeWarning: Values in x were outside bounds during a minimize step, clipping to bounds
+  g = append(wrapped_grad(x), 0.0)
+/Users/iurii/Library/Python/3.9/lib/python/site-packages/scipy/optimize/_slsqp_py.py:495: RuntimeWarning: Values in x were outside bounds during a minimize step, clipping to bounds
+  a_eq = vstack([con['jac'](x, *con['args'])
+/Users/iurii/Library/Python/3.9/lib/python/site-packages/scipy/optimize/_slsqp_py.py:437: RuntimeWarning: Values in x were outside bounds during a minimize step, clipping to bounds
+  fx = wrapped_fun(x)
+/Users/iurii/Library/Python/3.9/lib/python/site-packages/scipy/optimize/_slsqp_py.py:441: RuntimeWarning: Values in x were outside bounds during a minimize step, clipping to bounds
+  g = append(wrapped_grad(x), 0.0)
+/Users/iurii/Library/Python/3.9/lib/python/site-packages/scipy/optimize/_slsqp_py.py:495: RuntimeWarning: Values in x were outside bounds during a minimize step, clipping to bounds
+  a_eq = vstack([con['jac'](x, *con['args'])
+Шаг 170: 2019-02-15
+  μ range: [0.0000, 0.3037]
+  top-3: HD:20.0%, UNH:20.0%, MCD:20.0%, std=0.071
+Шаг 180: 2019-12-16
+  μ range: [-0.0054, 0.1974]
+  top-3: MCD:20.0%, HD:20.0%, JPM:20.0%, std=0.072
+Шаг 190: 2020-10-15
+  μ range: [-0.0216, 0.3359]
+  top-3: NEM:20.0%, MSFT:20.0%, AAPL:20.0%, std=0.071
+Шаг 200: 2021-08-17
+  μ range: [-0.0384, 0.3399]
+  top-3: UNH:20.0%, MSFT:20.0%, AAPL:20.0%, std=0.069
+/Users/iurii/Library/Python/3.9/lib/python/site-packages/scipy/optimize/_slsqp_py.py:437: RuntimeWarning: Values in x were outside bounds during a minimize step, clipping to bounds
+  fx = wrapped_fun(x)
+/Users/iurii/Library/Python/3.9/lib/python/site-packages/scipy/optimize/_slsqp_py.py:441: RuntimeWarning: Values in x were outside bounds during a minimize step, clipping to bounds
+  g = append(wrapped_grad(x), 0.0)
+/Users/iurii/Library/Python/3.9/lib/python/site-packages/scipy/optimize/_slsqp_py.py:495: RuntimeWarning: Values in x were outside bounds during a minimize step, clipping to bounds
+  a_eq = vstack([con['jac'](x, *con['args'])
+Шаг 210: 2022-06-16
+  μ range: [-0.0631, 0.2694]
+  top-3: AAPL:20.0%, PG:20.0%, MSFT:20.0%, std=0.075
+/Users/iurii/Library/Python/3.9/lib/python/site-packages/scipy/optimize/_slsqp_py.py:437: RuntimeWarning: Values in x were outside bounds during a minimize step, clipping to bounds
+  fx = wrapped_fun(x)
+/Users/iurii/Library/Python/3.9/lib/python/site-packages/scipy/optimize/_slsqp_py.py:441: RuntimeWarning: Values in x were outside bounds during a minimize step, clipping to bounds
+  g = append(wrapped_grad(x), 0.0)
+/Users/iurii/Library/Python/3.9/lib/python/site-packages/scipy/optimize/_slsqp_py.py:495: RuntimeWarning: Values in x were outside bounds during a minimize step, clipping to bounds
+  a_eq = vstack([con['jac'](x, *con['args'])
+Шаг 220: 2023-04-19
+  μ range: [-0.0184, 0.2677]
+  top-3: MCD:20.0%, PG:20.0%, AAPL:20.0%, std=0.075
+Шаг 230: 2024-02-20
+  μ range: [0.0000, 0.3103]
+  top-3: AAPL:20.0%, PG:20.0%, MSFT:20.0%, std=0.068
+Шаг 240: 2024-12-18
+  μ range: [-0.0547, 0.2561]
+  top-3: AAPL:20.0%, MSFT:20.0%, GS:20.0%, std=0.075
+/Users/iurii/Library/Python/3.9/lib/python/site-packages/scipy/optimize/_slsqp_py.py:437: RuntimeWarning: Values in x were outside bounds during a minimize step, clipping to bounds
+  fx = wrapped_fun(x)
+Шаг 250: 2025-10-22
+  μ range: [-0.1999, 0.2816]
+  top-3: GS:20.0%, JPM:17.5%, CAT:15.8%, std=0.066
+
+Завершено. Всего периодов: 251
+      Sharpe: 0.70 (net: 0.68), оборот: 49.9%/мес
+      RMSE: 0.074992, MAE: 0.053246, Hit Rate: 54.05%
+
+[3/4] PatchTST...
+Устройство: mps
+Всего дней: 6547
+Train окно: 1260 дней
+Test окно: 21 дней
+Акций: 20
+PatchTST параметры:
+  - input_len: 252, pred_len: 21
+  - patch_len: 16, stride: 8
+  - d_model: 128, n_heads: 16, n_layers: 3, d_ff: 512
+  - dropout: 0.1, use_revin: True
+  - mask_ratio: 0.15
+  - pretrain_epochs: 20, finetune_epochs: 10
+  - pretrain_lr: 0.005, batch_size: 64
+
+Запуск бэктеста...
+
+Шаг 1/251 (0%): 2005-01-10
+  μ range: [-1.7423, 0.8133]
+  top-3: XOM:20.0%, CVX:20.0%, AAPL:20.0%, std=0.071
+Шаг 5/251 (1%): 2005-05-11
+  μ range: [-0.6204, 1.2303]
+  top-3: UNH:20.0%, NEM:20.0%, MMM:20.0%, std=0.069
+Шаг 10/251 (3%): 2005-10-10
+  μ range: [-0.5431, 0.7391]
+  top-3: PFE:20.0%, XOM:20.0%, UNH:18.3%, std=0.072
+/Users/iurii/Library/Python/3.9/lib/python/site-packages/scipy/optimize/_slsqp_py.py:437: RuntimeWarning: Values in x were outside bounds during a minimize step, clipping to bounds
+  fx = wrapped_fun(x)
+Шаг 15/251 (5%): 2006-03-13
+  μ range: [-0.8038, 1.2801]
+  top-3: CAT:20.0%, UNH:20.0%, PFE:17.2%, std=0.070
+/Users/iurii/Library/Python/3.9/lib/python/site-packages/scipy/optimize/_slsqp_py.py:437: RuntimeWarning: Values in x were outside bounds during a minimize step, clipping to bounds
+  fx = wrapped_fun(x)
+/Users/iurii/Library/Python/3.9/lib/python/site-packages/scipy/optimize/_slsqp_py.py:437: RuntimeWarning: Values in x were outside bounds during a minimize step, clipping to bounds
+  fx = wrapped_fun(x)
+/Users/iurii/Library/Python/3.9/lib/python/site-packages/scipy/optimize/_slsqp_py.py:441: RuntimeWarning: Values in x were outside bounds during a minimize step, clipping to bounds
+  g = append(wrapped_grad(x), 0.0)
+/Users/iurii/Library/Python/3.9/lib/python/site-packages/scipy/optimize/_slsqp_py.py:495: RuntimeWarning: Values in x were outside bounds during a minimize step, clipping to bounds
+  a_eq = vstack([con['jac'](x, *con['args'])
+Шаг 20/251 (7%): 2006-08-10
+  μ range: [-1.7614, 1.6866]
+  top-3: UNH:20.0%, CAT:20.0%, AAPL:20.0%, std=0.072
+/Users/iurii/Library/Python/3.9/lib/python/site-packages/scipy/optimize/_slsqp_py.py:437: RuntimeWarning: Values in x were outside bounds during a minimize step, clipping to bounds
+  fx = wrapped_fun(x)
+/Users/iurii/Library/Python/3.9/lib/python/site-packages/scipy/optimize/_slsqp_py.py:437: RuntimeWarning: Values in x were outside bounds during a minimize step, clipping to bounds
+  fx = wrapped_fun(x)
+/Users/iurii/Library/Python/3.9/lib/python/site-packages/scipy/optimize/_slsqp_py.py:441: RuntimeWarning: Values in x were outside bounds during a minimize step, clipping to bounds
+  g = append(wrapped_grad(x), 0.0)
+/Users/iurii/Library/Python/3.9/lib/python/site-packages/scipy/optimize/_slsqp_py.py:495: RuntimeWarning: Values in x were outside bounds during a minimize step, clipping to bounds
+  a_eq = vstack([con['jac'](x, *con['args'])
+Шаг 25/251 (9%): 2007-01-11
+  μ range: [-0.9126, 0.7778]
+  top-3: MCD:20.0%, VZ:20.0%, WFC:17.6%, std=0.068
+/Users/iurii/Library/Python/3.9/lib/python/site-packages/scipy/optimize/_slsqp_py.py:437: RuntimeWarning: Values in x were outside bounds during a minimize step, clipping to bounds
+  fx = wrapped_fun(x)
+Шаг 30/251 (11%): 2007-06-13
+  μ range: [-0.6583, 1.9317]
+  top-3: MMM:20.0%, CAT:20.0%, MCD:20.0%, std=0.075
+Шаг 35/251 (13%): 2007-11-09
+  μ range: [-0.5876, 0.8825]
+  top-3: KO:20.0%, VZ:20.0%, MSFT:20.0%, std=0.075
+Шаг 40/251 (15%): 2008-04-14
+  μ range: [-0.8494, 1.5946]
+  top-3: CVX:20.0%, MCD:20.0%, MSFT:20.0%, std=0.075
+/Users/iurii/Library/Python/3.9/lib/python/site-packages/scipy/optimize/_slsqp_py.py:437: RuntimeWarning: Values in x were outside bounds during a minimize step, clipping to bounds
+  fx = wrapped_fun(x)
+/Users/iurii/Library/Python/3.9/lib/python/site-packages/scipy/optimize/_slsqp_py.py:441: RuntimeWarning: Values in x were outside bounds during a minimize step, clipping to bounds
+  g = append(wrapped_grad(x), 0.0)
+/Users/iurii/Library/Python/3.9/lib/python/site-packages/scipy/optimize/_slsqp_py.py:495: RuntimeWarning: Values in x were outside bounds during a minimize step, clipping to bounds
+  a_eq = vstack([con['jac'](x, *con['args'])
+Шаг 45/251 (17%): 2008-09-11
+  μ range: [-0.6138, 1.6221]
+  top-3: GS:20.0%, JNJ:20.0%, UNH:18.5%, std=0.071
+Шаг 50/251 (19%): 2009-02-11
+  μ range: [-2.0950, 2.1986]
+  top-3: WFC:20.0%, CVX:20.0%, PG:20.0%, std=0.072
+Шаг 55/251 (21%): 2009-07-14
+  μ range: [-2.2444, 1.6298]
+  top-3: KO:20.0%, VZ:20.0%, CVX:20.0%, std=0.075
+Шаг 60/251 (23%): 2009-12-10
+  μ range: [-1.2135, 1.4012]
+  top-3: AAPL:20.0%, MMM:20.0%, HD:20.0%, std=0.072
+Шаг 65/251 (25%): 2010-05-13
+  μ range: [-0.6626, 1.1273]
+  top-3: CAT:20.0%, HD:20.0%, AAPL:20.0%, std=0.073
+Шаг 70/251 (27%): 2010-10-12
+  μ range: [-0.2013, 1.3749]
+  top-3: AAPL:20.0%, VZ:20.0%, GS:20.0%, std=0.075
+Шаг 75/251 (29%): 2011-03-14
+  μ range: [-0.7039, 0.7510]
+  top-3: CAT:20.0%, VZ:20.0%, MCD:20.0%, std=0.075
+/Users/iurii/Library/Python/3.9/lib/python/site-packages/scipy/optimize/_slsqp_py.py:437: RuntimeWarning: Values in x were outside bounds during a minimize step, clipping to bounds
+  fx = wrapped_fun(x)
+/Users/iurii/Library/Python/3.9/lib/python/site-packages/scipy/optimize/_slsqp_py.py:441: RuntimeWarning: Values in x were outside bounds during a minimize step, clipping to bounds
+  g = append(wrapped_grad(x), 0.0)
+/Users/iurii/Library/Python/3.9/lib/python/site-packages/scipy/optimize/_slsqp_py.py:495: RuntimeWarning: Values in x were outside bounds during a minimize step, clipping to bounds
+  a_eq = vstack([con['jac'](x, *con['args'])
+Шаг 80/251 (31%): 2011-08-11
+  μ range: [-1.1435, 2.0895]
+  top-3: CVX:20.0%, UNH:20.0%, MMM:20.0%, std=0.075
+Шаг 85/251 (33%): 2012-01-11
+  μ range: [-0.2685, 1.7392]
+  top-3: PFE:20.0%, HD:20.0%, KO:18.4%, std=0.071
+/Users/iurii/Library/Python/3.9/lib/python/site-packages/scipy/optimize/_slsqp_py.py:437: RuntimeWarning: Values in x were outside bounds during a minimize step, clipping to bounds
+  fx = wrapped_fun(x)
+/Users/iurii/Library/Python/3.9/lib/python/site-packages/scipy/optimize/_slsqp_py.py:441: RuntimeWarning: Values in x were outside bounds during a minimize step, clipping to bounds
+  g = append(wrapped_grad(x), 0.0)
+/Users/iurii/Library/Python/3.9/lib/python/site-packages/scipy/optimize/_slsqp_py.py:495: RuntimeWarning: Values in x were outside bounds during a minimize step, clipping to bounds
+  a_eq = vstack([con['jac'](x, *con['args'])
+Шаг 90/251 (35%): 2012-06-12
+  μ range: [-1.1989, 0.5698]
+  top-3: UNH:20.0%, JNJ:20.0%, PG:20.0%, std=0.075
+/Users/iurii/Library/Python/3.9/lib/python/site-packages/scipy/optimize/_slsqp_py.py:437: RuntimeWarning: Values in x were outside bounds during a minimize step, clipping to bounds
+  fx = wrapped_fun(x)
+/Users/iurii/Library/Python/3.9/lib/python/site-packages/scipy/optimize/_slsqp_py.py:441: RuntimeWarning: Values in x were outside bounds during a minimize step, clipping to bounds
+  g = append(wrapped_grad(x), 0.0)
+/Users/iurii/Library/Python/3.9/lib/python/site-packages/scipy/optimize/_slsqp_py.py:495: RuntimeWarning: Values in x were outside bounds during a minimize step, clipping to bounds
+  a_eq = vstack([con['jac'](x, *con['args'])
+/Users/iurii/Library/Python/3.9/lib/python/site-packages/scipy/optimize/_slsqp_py.py:437: RuntimeWarning: Values in x were outside bounds during a minimize step, clipping to bounds
+  fx = wrapped_fun(x)
+/Users/iurii/Library/Python/3.9/lib/python/site-packages/scipy/optimize/_slsqp_py.py:441: RuntimeWarning: Values in x were outside bounds during a minimize step, clipping to bounds
+  g = append(wrapped_grad(x), 0.0)
+/Users/iurii/Library/Python/3.9/lib/python/site-packages/scipy/optimize/_slsqp_py.py:495: RuntimeWarning: Values in x were outside bounds during a minimize step, clipping to bounds
+  a_eq = vstack([con['jac'](x, *con['args'])
+Шаг 95/251 (37%): 2012-11-12
+  μ range: [-0.4238, 0.7841]
+  top-3: AAPL:20.0%, JNJ:20.0%, CAT:20.0%, std=0.075
+Шаг 100/251 (39%): 2013-04-16
+  μ range: [-1.2307, 0.5335]
+  top-3: KO:20.0%, PFE:20.0%, VZ:20.0%, std=0.075
+/Users/iurii/Library/Python/3.9/lib/python/site-packages/scipy/optimize/_slsqp_py.py:437: RuntimeWarning: Values in x were outside bounds during a minimize step, clipping to bounds
+  fx = wrapped_fun(x)
+/Users/iurii/Library/Python/3.9/lib/python/site-packages/scipy/optimize/_slsqp_py.py:441: RuntimeWarning: Values in x were outside bounds during a minimize step, clipping to bounds
+  g = append(wrapped_grad(x), 0.0)
+/Users/iurii/Library/Python/3.9/lib/python/site-packages/scipy/optimize/_slsqp_py.py:495: RuntimeWarning: Values in x were outside bounds during a minimize step, clipping to bounds
+  a_eq = vstack([con['jac'](x, *con['args'])
+Шаг 105/251 (41%): 2013-09-13
+  μ range: [-0.5260, 0.5390]
+  top-3: INTC:20.0%, JNJ:20.0%, MCD:20.0%, std=0.072
+Шаг 110/251 (43%): 2014-02-13
+  μ range: [-1.1235, 0.7711]
+  top-3: KO:20.0%, UNH:20.0%, MMM:20.0%, std=0.069
+Шаг 115/251 (45%): 2014-07-16
+  μ range: [-0.3983, 0.3685]
+  top-3: MMM:20.0%, VZ:20.0%, DUK:20.0%, std=0.072
+Шаг 120/251 (47%): 2014-12-12
+  μ range: [-0.8601, 0.7101]
+  top-3: INTC:20.0%, MMM:20.0%, MCD:20.0%, std=0.073
+Шаг 125/251 (49%): 2015-05-15
+  μ range: [-0.4543, 0.8996]
+  top-3: UNH:20.0%, PFE:20.0%, MSFT:20.0%, std=0.067
+/Users/iurii/Library/Python/3.9/lib/python/site-packages/scipy/optimize/_slsqp_py.py:437: RuntimeWarning: Values in x were outside bounds during a minimize step, clipping to bounds
+  fx = wrapped_fun(x)
+/Users/iurii/Library/Python/3.9/lib/python/site-packages/scipy/optimize/_slsqp_py.py:441: RuntimeWarning: Values in x were outside bounds during a minimize step, clipping to bounds
+  g = append(wrapped_grad(x), 0.0)
+/Users/iurii/Library/Python/3.9/lib/python/site-packages/scipy/optimize/_slsqp_py.py:495: RuntimeWarning: Values in x were outside bounds during a minimize step, clipping to bounds
+  a_eq = vstack([con['jac'](x, *con['args'])
+Шаг 130/251 (51%): 2015-10-14
+  μ range: [-0.7454, 0.9211]
+  top-3: UNH:20.0%, MSFT:20.0%, VZ:20.0%, std=0.072
+Шаг 135/251 (53%): 2016-03-16
+  μ range: [-1.7649, 0.8651]
+  top-3: GS:20.0%, MSFT:20.0%, DUK:20.0%, std=0.073
+Шаг 140/251 (55%): 2016-08-15
+  μ range: [-0.9108, 0.8530]
+  top-3: GS:20.0%, MCD:20.0%, DUK:20.0%, std=0.075
+Шаг 145/251 (57%): 2017-01-13
+  μ range: [-0.5174, 0.5833]
+  top-3: VZ:20.0%, UNH:20.0%, CAT:20.0%, std=0.075
+Шаг 150/251 (59%): 2017-06-15
+  μ range: [-0.7635, 1.2108]
+  top-3: GS:20.0%, JPM:20.0%, AAPL:20.0%, std=0.075
+Шаг 155/251 (61%): 2017-11-13
+  μ range: [-0.8007, 0.9185]
+  top-3: GS:20.0%, MCD:20.0%, DUK:20.0%, std=0.075
+/Users/iurii/Library/Python/3.9/lib/python/site-packages/scipy/optimize/_slsqp_py.py:437: RuntimeWarning: Values in x were outside bounds during a minimize step, clipping to bounds
+  fx = wrapped_fun(x)
+/Users/iurii/Library/Python/3.9/lib/python/site-packages/scipy/optimize/_slsqp_py.py:441: RuntimeWarning: Values in x were outside bounds during a minimize step, clipping to bounds
+  g = append(wrapped_grad(x), 0.0)
+/Users/iurii/Library/Python/3.9/lib/python/site-packages/scipy/optimize/_slsqp_py.py:495: RuntimeWarning: Values in x were outside bounds during a minimize step, clipping to bounds
+  a_eq = vstack([con['jac'](x, *con['args'])
+Шаг 160/251 (63%): 2018-04-17
+  μ range: [-1.0000, 1.0932]
+  top-3: CAT:20.0%, MCD:20.0%, AAPL:17.1%, std=0.067
+Шаг 165/251 (65%): 2018-09-14
+  μ range: [-1.0616, 1.0514]
+  top-3: UNH:20.0%, MMM:20.0%, PFE:20.0%, std=0.074
+Шаг 170/251 (67%): 2019-02-15
+  μ range: [-1.0358, 0.6562]
+  top-3: CVX:20.0%, VZ:20.0%, DUK:18.8%, std=0.072
+Шаг 175/251 (69%): 2019-07-18
+  μ range: [-0.7912, 1.1572]
+  top-3: KO:20.0%, PFE:20.0%, MMM:20.0%, std=0.075
+/Users/iurii/Library/Python/3.9/lib/python/site-packages/scipy/optimize/_slsqp_py.py:437: RuntimeWarning: Values in x were outside bounds during a minimize step, clipping to bounds
+  fx = wrapped_fun(x)
+Шаг 180/251 (71%): 2019-12-16
+  μ range: [-0.9984, 1.4848]
+  top-3: AAPL:20.0%, DUK:20.0%, HD:20.0%, std=0.067
+Шаг 185/251 (73%): 2020-05-18
+  μ range: [-0.9693, 3.1587]
+  top-3: NEM:20.0%, HD:20.0%, UNH:20.0%, std=0.069
+Шаг 190/251 (75%): 2020-10-15
+  μ range: [-2.6797, 1.3992]
+  top-3: UNH:20.0%, NEM:20.0%, HD:20.0%, std=0.073
+Шаг 195/251 (77%): 2021-03-18
+  μ range: [-1.6055, 1.2368]
+  top-3: AAPL:20.0%, MMM:20.0%, GS:20.0%, std=0.075
+Шаг 200/251 (79%): 2021-08-17
+  μ range: [-0.3415, 1.0023]
+  top-3: PFE:20.0%, WFC:20.0%, DUK:20.0%, std=0.072
+/Users/iurii/Library/Python/3.9/lib/python/site-packages/scipy/optimize/_slsqp_py.py:437: RuntimeWarning: Values in x were outside bounds during a minimize step, clipping to bounds
+  fx = wrapped_fun(x)
+/Users/iurii/Library/Python/3.9/lib/python/site-packages/scipy/optimize/_slsqp_py.py:441: RuntimeWarning: Values in x were outside bounds during a minimize step, clipping to bounds
+  g = append(wrapped_grad(x), 0.0)
+/Users/iurii/Library/Python/3.9/lib/python/site-packages/scipy/optimize/_slsqp_py.py:495: RuntimeWarning: Values in x were outside bounds during a minimize step, clipping to bounds
+  a_eq = vstack([con['jac'](x, *con['args'])
+/Users/iurii/Library/Python/3.9/lib/python/site-packages/scipy/optimize/_slsqp_py.py:437: RuntimeWarning: Values in x were outside bounds during a minimize step, clipping to bounds
+  fx = wrapped_fun(x)
+/Users/iurii/Library/Python/3.9/lib/python/site-packages/scipy/optimize/_slsqp_py.py:441: RuntimeWarning: Values in x were outside bounds during a minimize step, clipping to bounds
+  g = append(wrapped_grad(x), 0.0)
+/Users/iurii/Library/Python/3.9/lib/python/site-packages/scipy/optimize/_slsqp_py.py:495: RuntimeWarning: Values in x were outside bounds during a minimize step, clipping to bounds
+  a_eq = vstack([con['jac'](x, *con['args'])
+/Users/iurii/Library/Python/3.9/lib/python/site-packages/scipy/optimize/_slsqp_py.py:437: RuntimeWarning: Values in x were outside bounds during a minimize step, clipping to bounds
+  fx = wrapped_fun(x)
+/Users/iurii/Library/Python/3.9/lib/python/site-packages/scipy/optimize/_slsqp_py.py:441: RuntimeWarning: Values in x were outside bounds during a minimize step, clipping to bounds
+  g = append(wrapped_grad(x), 0.0)
+/Users/iurii/Library/Python/3.9/lib/python/site-packages/scipy/optimize/_slsqp_py.py:495: RuntimeWarning: Values in x were outside bounds during a minimize step, clipping to bounds
+  a_eq = vstack([con['jac'](x, *con['args'])
+Шаг 205/251 (81%): 2022-01-14
+  μ range: [-0.3801, 0.5593]
+  top-3: HD:20.0%, MSFT:20.0%, NEM:17.0%, std=0.066
+Шаг 210/251 (83%): 2022-06-16
+  μ range: [-0.8319, 0.7839]
+  top-3: CVX:20.0%, PFE:20.0%, NEM:20.0%, std=0.075
+Шаг 215/251 (85%): 2022-11-15
+  μ range: [-1.1548, 1.1659]
+  top-3: XOM:20.0%, NEM:20.0%, DUK:20.0%, std=0.069
+Шаг 220/251 (87%): 2023-04-19
+  μ range: [-3.1074, 0.7443]
+  top-3: XOM:20.0%, MSFT:20.0%, MCD:20.0%, std=0.075
+Шаг 225/251 (89%): 2023-09-19
+  μ range: [-0.4775, 0.7734]
+  top-3: MSFT:20.0%, NEM:20.0%, UNH:20.0%, std=0.071
+Шаг 230/251 (91%): 2024-02-20
+  μ range: [-0.6042, 0.7239]
+  top-3: KO:20.0%, CAT:20.0%, PG:20.0%, std=0.075
+/Users/iurii/Library/Python/3.9/lib/python/site-packages/scipy/optimize/_slsqp_py.py:437: RuntimeWarning: Values in x were outside bounds during a minimize step, clipping to bounds
+  fx = wrapped_fun(x)
+/Users/iurii/Library/Python/3.9/lib/python/site-packages/scipy/optimize/_slsqp_py.py:441: RuntimeWarning: Values in x were outside bounds during a minimize step, clipping to bounds
+  g = append(wrapped_grad(x), 0.0)
+/Users/iurii/Library/Python/3.9/lib/python/site-packages/scipy/optimize/_slsqp_py.py:495: RuntimeWarning: Values in x were outside bounds during a minimize step, clipping to bounds
+  a_eq = vstack([con['jac'](x, *con['args'])
+Шаг 235/251 (93%): 2024-07-22
+  μ range: [-0.7456, 1.1319]
+  top-3: JPM:20.0%, CAT:20.0%, VZ:20.0%, std=0.070
+Шаг 240/251 (95%): 2024-12-18
+  μ range: [-0.4871, 1.4692]
+  top-3: AAPL:20.0%, GS:20.0%, MMM:20.0%, std=0.074
+/Users/iurii/Library/Python/3.9/lib/python/site-packages/scipy/optimize/_slsqp_py.py:437: RuntimeWarning: Values in x were outside bounds during a minimize step, clipping to bounds
+  fx = wrapped_fun(x)
+/Users/iurii/Library/Python/3.9/lib/python/site-packages/scipy/optimize/_slsqp_py.py:441: RuntimeWarning: Values in x were outside bounds during a minimize step, clipping to bounds
+  g = append(wrapped_grad(x), 0.0)
+/Users/iurii/Library/Python/3.9/lib/python/site-packages/scipy/optimize/_slsqp_py.py:495: RuntimeWarning: Values in x were outside bounds during a minimize step, clipping to bounds
+  a_eq = vstack([con['jac'](x, *con['args'])
+Шаг 245/251 (97%): 2025-05-22
+  μ range: [-2.7391, 2.1493]
+  top-3: XOM:20.0%, PG:20.0%, AAPL:20.0%, std=0.072
+Шаг 250/251 (99%): 2025-10-22
+  μ range: [-1.1490, 2.8623]
+  top-3: NEM:20.0%, DUK:20.0%, JNJ:20.0%, std=0.075
+
+Завершено. Всего периодов: 251
+      Sharpe: 0.57 (net: 0.52), оборот: 113.3%/мес
+      RMSE: 0.094586, MAE: 0.066185, Hit Rate: 51.43%
+
+[4/4] PatchTST + ICEEMDAN...
+Устройство: mps
+Всего дней: 6547
+Train окно: 1260 дней
+Test окно: 21 дней
+Акций: 20
+PatchTST+ICEEMDAN параметры:
+  - каналы: noise/cycle/trend, forecast_noise: True
+  - ICEEMDAN: trials=50, epsilon=0.2, группировка: <5 / <=63 дней
+  - кэш декомпозиций: /Users/iurii/Documents/ВКР/VKR_Patch/data/cache/iceemdan
+  - input_len: 252, pred_len: 21
+  - patch_len: 16, stride: 8, padding_patch: True
+  - d_model: 128, n_heads: 16, n_layers: 3, d_ff: 512
+  - pretrain_epochs: 20, finetune_epochs: 10
+  - pretrain_lr: 0.005, batch_size: 64
+
+Запуск бэктеста...
+
+Шаг 1/251 (0%): 2005-01-10
+  μ range: [-1.1013, 2.4235]
+  top-3: JNJ:20.0%, UNH:20.0%, AAPL:20.0%, std=0.071
+/Users/iurii/Library/Python/3.9/lib/python/site-packages/scipy/optimize/_slsqp_py.py:437: RuntimeWarning: Values in x were outside bounds during a minimize step, clipping to bounds
+  fx = wrapped_fun(x)
+Шаг 5/251 (1%): 2005-05-11
+  μ range: [-1.8652, 1.2969]
+  top-3: VZ:20.0%, XOM:17.8%, UNH:16.5%, std=0.066
+Шаг 10/251 (3%): 2005-10-10
+  μ range: [-1.2284, 1.5822]
+  top-3: GS:20.0%, UNH:20.0%, MCD:18.7%, std=0.072
+/Users/iurii/Library/Python/3.9/lib/python/site-packages/scipy/optimize/_slsqp_py.py:437: RuntimeWarning: Values in x were outside bounds during a minimize step, clipping to bounds
+  fx = wrapped_fun(x)
+/Users/iurii/Library/Python/3.9/lib/python/site-packages/scipy/optimize/_slsqp_py.py:441: RuntimeWarning: Values in x were outside bounds during a minimize step, clipping to bounds
+  g = append(wrapped_grad(x), 0.0)
+/Users/iurii/Library/Python/3.9/lib/python/site-packages/scipy/optimize/_slsqp_py.py:495: RuntimeWarning: Values in x were outside bounds during a minimize step, clipping to bounds
+  a_eq = vstack([con['jac'](x, *con['args'])
+Шаг 15/251 (5%): 2006-03-13
+  μ range: [-1.3428, 2.4173]
+  top-3: PFE:20.0%, NEM:20.0%, HD:19.7%, std=0.072
+Шаг 20/251 (7%): 2006-08-10
+  μ range: [-3.4079, 1.0355]
+  top-3: PFE:20.0%, CVX:20.0%, PG:20.0%, std=0.071
+/Users/iurii/Library/Python/3.9/lib/python/site-packages/scipy/optimize/_slsqp_py.py:437: RuntimeWarning: Values in x were outside bounds during a minimize step, clipping to bounds
+  fx = wrapped_fun(x)
+/Users/iurii/Library/Python/3.9/lib/python/site-packages/scipy/optimize/_slsqp_py.py:441: RuntimeWarning: Values in x were outside bounds during a minimize step, clipping to bounds
+  g = append(wrapped_grad(x), 0.0)
+/Users/iurii/Library/Python/3.9/lib/python/site-packages/scipy/optimize/_slsqp_py.py:495: RuntimeWarning: Values in x were outside bounds during a minimize step, clipping to bounds
+  a_eq = vstack([con['jac'](x, *con['args'])
+Шаг 25/251 (9%): 2007-01-11
+  μ range: [-0.6612, 1.4057]
+  top-3: CVX:20.0%, CAT:20.0%, PG:20.0%, std=0.070
+/Users/iurii/Library/Python/3.9/lib/python/site-packages/scipy/optimize/_slsqp_py.py:437: RuntimeWarning: Values in x were outside bounds during a minimize step, clipping to bounds
+  fx = wrapped_fun(x)
+/Users/iurii/Library/Python/3.9/lib/python/site-packages/scipy/optimize/_slsqp_py.py:441: RuntimeWarning: Values in x were outside bounds during a minimize step, clipping to bounds
+  g = append(wrapped_grad(x), 0.0)
+/Users/iurii/Library/Python/3.9/lib/python/site-packages/scipy/optimize/_slsqp_py.py:495: RuntimeWarning: Values in x were outside bounds during a minimize step, clipping to bounds
+  a_eq = vstack([con['jac'](x, *con['args'])
+Шаг 30/251 (11%): 2007-06-13
+  μ range: [-2.2831, 2.0812]
+  top-3: CAT:20.0%, GS:18.4%, CVX:14.9%, std=0.064
+/Users/iurii/Library/Python/3.9/lib/python/site-packages/scipy/optimize/_slsqp_py.py:437: RuntimeWarning: Values in x were outside bounds during a minimize step, clipping to bounds
+  fx = wrapped_fun(x)
+/Users/iurii/Library/Python/3.9/lib/python/site-packages/scipy/optimize/_slsqp_py.py:441: RuntimeWarning: Values in x were outside bounds during a minimize step, clipping to bounds
+  g = append(wrapped_grad(x), 0.0)
+/Users/iurii/Library/Python/3.9/lib/python/site-packages/scipy/optimize/_slsqp_py.py:495: RuntimeWarning: Values in x were outside bounds during a minimize step, clipping to bounds
+  a_eq = vstack([con['jac'](x, *con['args'])
+/Users/iurii/Library/Python/3.9/lib/python/site-packages/scipy/optimize/_slsqp_py.py:437: RuntimeWarning: Values in x were outside bounds during a minimize step, clipping to bounds
+  fx = wrapped_fun(x)
+/Users/iurii/Library/Python/3.9/lib/python/site-packages/scipy/optimize/_slsqp_py.py:441: RuntimeWarning: Values in x were outside bounds during a minimize step, clipping to bounds
+  g = append(wrapped_grad(x), 0.0)
+/Users/iurii/Library/Python/3.9/lib/python/site-packages/scipy/optimize/_slsqp_py.py:495: RuntimeWarning: Values in x were outside bounds during a minimize step, clipping to bounds
+  a_eq = vstack([con['jac'](x, *con['args'])
+Шаг 35/251 (13%): 2007-11-09
+  μ range: [-0.7795, 1.7470]
+  top-3: MCD:20.0%, NEM:20.0%, GS:20.0%, std=0.070
+Шаг 40/251 (15%): 2008-04-14
+  μ range: [-2.8679, 1.4749]
+  top-3: XOM:20.0%, WFC:20.0%, KO:20.0%, std=0.072
+/Users/iurii/Library/Python/3.9/lib/python/site-packages/scipy/optimize/_slsqp_py.py:437: RuntimeWarning: Values in x were outside bounds during a minimize step, clipping to bounds
+  fx = wrapped_fun(x)
+/Users/iurii/Library/Python/3.9/lib/python/site-packages/scipy/optimize/_slsqp_py.py:441: RuntimeWarning: Values in x were outside bounds during a minimize step, clipping to bounds
+  g = append(wrapped_grad(x), 0.0)
+/Users/iurii/Library/Python/3.9/lib/python/site-packages/scipy/optimize/_slsqp_py.py:495: RuntimeWarning: Values in x were outside bounds during a minimize step, clipping to bounds
+  a_eq = vstack([con['jac'](x, *con['args'])
+/Users/iurii/Library/Python/3.9/lib/python/site-packages/scipy/optimize/_slsqp_py.py:437: RuntimeWarning: Values in x were outside bounds during a minimize step, clipping to bounds
+  fx = wrapped_fun(x)
+/Users/iurii/Library/Python/3.9/lib/python/site-packages/scipy/optimize/_slsqp_py.py:441: RuntimeWarning: Values in x were outside bounds during a minimize step, clipping to bounds
+  g = append(wrapped_grad(x), 0.0)
+/Users/iurii/Library/Python/3.9/lib/python/site-packages/scipy/optimize/_slsqp_py.py:495: RuntimeWarning: Values in x were outside bounds during a minimize step, clipping to bounds
+  a_eq = vstack([con['jac'](x, *con['args'])
+Шаг 45/251 (17%): 2008-09-11
+  μ range: [-2.0881, 3.4710]
+  top-3: JNJ:20.0%, UNH:20.0%, PG:20.0%, std=0.072
+/Users/iurii/Library/Python/3.9/lib/python/site-packages/scipy/optimize/_slsqp_py.py:437: RuntimeWarning: Values in x were outside bounds during a minimize step, clipping to bounds
+  fx = wrapped_fun(x)
+/Users/iurii/Library/Python/3.9/lib/python/site-packages/scipy/optimize/_slsqp_py.py:441: RuntimeWarning: Values in x were outside bounds during a minimize step, clipping to bounds
+  g = append(wrapped_grad(x), 0.0)
+/Users/iurii/Library/Python/3.9/lib/python/site-packages/scipy/optimize/_slsqp_py.py:495: RuntimeWarning: Values in x were outside bounds during a minimize step, clipping to bounds
+  a_eq = vstack([con['jac'](x, *con['args'])
+Шаг 50/251 (19%): 2009-02-11
+  μ range: [-5.6184, 1.2773]
+  top-3: VZ:20.0%, CAT:20.0%, DUK:20.0%, std=0.075
+Шаг 55/251 (21%): 2009-07-14
+  μ range: [-1.1702, 7.8291]
+  top-3: WFC:20.0%, CAT:20.0%, MSFT:20.0%, std=0.072
+Шаг 60/251 (23%): 2009-12-10
+  μ range: [-2.9477, 1.1828]
+  top-3: MMM:20.0%, KO:20.0%, JNJ:20.0%, std=0.074
+/Users/iurii/Library/Python/3.9/lib/python/site-packages/scipy/optimize/_slsqp_py.py:437: RuntimeWarning: Values in x were outside bounds during a minimize step, clipping to bounds
+  fx = wrapped_fun(x)
+/Users/iurii/Library/Python/3.9/lib/python/site-packages/scipy/optimize/_slsqp_py.py:441: RuntimeWarning: Values in x were outside bounds during a minimize step, clipping to bounds
+  g = append(wrapped_grad(x), 0.0)
+/Users/iurii/Library/Python/3.9/lib/python/site-packages/scipy/optimize/_slsqp_py.py:495: RuntimeWarning: Values in x were outside bounds during a minimize step, clipping to bounds
+  a_eq = vstack([con['jac'](x, *con['args'])
+Шаг 65/251 (25%): 2010-05-13
+  μ range: [-1.2478, 0.8349]
+  top-3: INTC:20.0%, PFE:20.0%, KO:20.0%, std=0.075
+Шаг 70/251 (27%): 2010-10-12
+  μ range: [-0.7636, 1.7612]
+  top-3: KO:20.0%, VZ:20.0%, JNJ:20.0%, std=0.075
+/Users/iurii/Library/Python/3.9/lib/python/site-packages/scipy/optimize/_slsqp_py.py:437: RuntimeWarning: Values in x were outside bounds during a minimize step, clipping to bounds
+  fx = wrapped_fun(x)
+/Users/iurii/Library/Python/3.9/lib/python/site-packages/scipy/optimize/_slsqp_py.py:441: RuntimeWarning: Values in x were outside bounds during a minimize step, clipping to bounds
+  g = append(wrapped_grad(x), 0.0)
+/Users/iurii/Library/Python/3.9/lib/python/site-packages/scipy/optimize/_slsqp_py.py:495: RuntimeWarning: Values in x were outside bounds during a minimize step, clipping to bounds
+  a_eq = vstack([con['jac'](x, *con['args'])
+Шаг 75/251 (29%): 2011-03-14
+  μ range: [-0.7787, 1.2841]
+  top-3: XOM:20.0%, HD:20.0%, MCD:20.0%, std=0.073
+Шаг 80/251 (31%): 2011-08-11
+  μ range: [-3.6176, 0.3447]
+  top-3: WFC:20.0%, AAPL:20.0%, PG:20.0%, std=0.075
+Шаг 85/251 (33%): 2012-01-11
+  μ range: [-0.5988, 2.0326]
+  top-3: AAPL:20.0%, HD:20.0%, CAT:20.0%, std=0.072
+/Users/iurii/Library/Python/3.9/lib/python/site-packages/scipy/optimize/_slsqp_py.py:437: RuntimeWarning: Values in x were outside bounds during a minimize step, clipping to bounds
+  fx = wrapped_fun(x)
+/Users/iurii/Library/Python/3.9/lib/python/site-packages/scipy/optimize/_slsqp_py.py:441: RuntimeWarning: Values in x were outside bounds during a minimize step, clipping to bounds
+  g = append(wrapped_grad(x), 0.0)
+/Users/iurii/Library/Python/3.9/lib/python/site-packages/scipy/optimize/_slsqp_py.py:495: RuntimeWarning: Values in x were outside bounds during a minimize step, clipping to bounds
+  a_eq = vstack([con['jac'](x, *con['args'])
+/Users/iurii/Library/Python/3.9/lib/python/site-packages/scipy/optimize/_slsqp_py.py:437: RuntimeWarning: Values in x were outside bounds during a minimize step, clipping to bounds
+  fx = wrapped_fun(x)
+/Users/iurii/Library/Python/3.9/lib/python/site-packages/scipy/optimize/_slsqp_py.py:441: RuntimeWarning: Values in x were outside bounds during a minimize step, clipping to bounds
+  g = append(wrapped_grad(x), 0.0)
+/Users/iurii/Library/Python/3.9/lib/python/site-packages/scipy/optimize/_slsqp_py.py:495: RuntimeWarning: Values in x were outside bounds during a minimize step, clipping to bounds
+  a_eq = vstack([con['jac'](x, *con['args'])
+Шаг 90/251 (35%): 2012-06-12
+  μ range: [-2.4236, 0.8571]
+  top-3: VZ:20.0%, INTC:20.0%, NEM:20.0%, std=0.075
+Шаг 95/251 (37%): 2012-11-12
+  μ range: [-1.0911, 1.2345]
+  top-3: WFC:20.0%, PFE:20.0%, HD:20.0%, std=0.075
+/Users/iurii/Library/Python/3.9/lib/python/site-packages/scipy/optimize/_slsqp_py.py:437: RuntimeWarning: Values in x were outside bounds during a minimize step, clipping to bounds
+  fx = wrapped_fun(x)
+/Users/iurii/Library/Python/3.9/lib/python/site-packages/scipy/optimize/_slsqp_py.py:441: RuntimeWarning: Values in x were outside bounds during a minimize step, clipping to bounds
+  g = append(wrapped_grad(x), 0.0)
+/Users/iurii/Library/Python/3.9/lib/python/site-packages/scipy/optimize/_slsqp_py.py:495: RuntimeWarning: Values in x were outside bounds during a minimize step, clipping to bounds
+  a_eq = vstack([con['jac'](x, *con['args'])
+Шаг 100/251 (39%): 2013-04-16
+  μ range: [-0.8710, 0.7580]
+  top-3: VZ:20.0%, DUK:20.0%, HD:20.0%, std=0.075
+Шаг 105/251 (41%): 2013-09-13
+  μ range: [-1.2813, 1.3441]
+  top-3: MSFT:20.0%, PFE:20.0%, PG:20.0%, std=0.074
+Шаг 110/251 (43%): 2014-02-13
+  μ range: [-2.0266, 0.3152]
+  top-3: INTC:20.0%, JPM:20.0%, JNJ:20.0%, std=0.075
+/Users/iurii/Library/Python/3.9/lib/python/site-packages/scipy/optimize/_slsqp_py.py:437: RuntimeWarning: Values in x were outside bounds during a minimize step, clipping to bounds
+  fx = wrapped_fun(x)
+/Users/iurii/Library/Python/3.9/lib/python/site-packages/scipy/optimize/_slsqp_py.py:441: RuntimeWarning: Values in x were outside bounds during a minimize step, clipping to bounds
+  g = append(wrapped_grad(x), 0.0)
+/Users/iurii/Library/Python/3.9/lib/python/site-packages/scipy/optimize/_slsqp_py.py:495: RuntimeWarning: Values in x were outside bounds during a minimize step, clipping to bounds
+  a_eq = vstack([con['jac'](x, *con['args'])
+Шаг 115/251 (45%): 2014-07-16
+  μ range: [-0.4396, 1.6874]
+  top-3: KO:20.0%, NEM:20.0%, INTC:20.0%, std=0.073
+/Users/iurii/Library/Python/3.9/lib/python/site-packages/scipy/optimize/_slsqp_py.py:437: RuntimeWarning: Values in x were outside bounds during a minimize step, clipping to bounds
+  fx = wrapped_fun(x)
+Шаг 120/251 (47%): 2014-12-12
+  μ range: [-2.5336, 1.2758]
+  top-3: PFE:20.0%, DUK:20.0%, MMM:20.0%, std=0.072
+/Users/iurii/Library/Python/3.9/lib/python/site-packages/scipy/optimize/_slsqp_py.py:437: RuntimeWarning: Values in x were outside bounds during a minimize step, clipping to bounds
+  fx = wrapped_fun(x)
+/Users/iurii/Library/Python/3.9/lib/python/site-packages/scipy/optimize/_slsqp_py.py:441: RuntimeWarning: Values in x were outside bounds during a minimize step, clipping to bounds
+  g = append(wrapped_grad(x), 0.0)
+/Users/iurii/Library/Python/3.9/lib/python/site-packages/scipy/optimize/_slsqp_py.py:495: RuntimeWarning: Values in x were outside bounds during a minimize step, clipping to bounds
+  a_eq = vstack([con['jac'](x, *con['args'])
+Шаг 125/251 (49%): 2015-05-15
+  μ range: [-0.6211, 0.7235]
+  top-3: WFC:20.0%, CAT:20.0%, MSFT:20.0%, std=0.075
+/Users/iurii/Library/Python/3.9/lib/python/site-packages/scipy/optimize/_slsqp_py.py:437: RuntimeWarning: Values in x were outside bounds during a minimize step, clipping to bounds
+  fx = wrapped_fun(x)
+/Users/iurii/Library/Python/3.9/lib/python/site-packages/scipy/optimize/_slsqp_py.py:441: RuntimeWarning: Values in x were outside bounds during a minimize step, clipping to bounds
+  g = append(wrapped_grad(x), 0.0)
+/Users/iurii/Library/Python/3.9/lib/python/site-packages/scipy/optimize/_slsqp_py.py:495: RuntimeWarning: Values in x were outside bounds during a minimize step, clipping to bounds
+  a_eq = vstack([con['jac'](x, *con['args'])
+Шаг 130/251 (51%): 2015-10-14
+  μ range: [-1.3858, 2.0450]
+  top-3: NEM:20.0%, CVX:20.0%, MCD:20.0%, std=0.075
+/Users/iurii/Library/Python/3.9/lib/python/site-packages/scipy/optimize/_slsqp_py.py:437: RuntimeWarning: Values in x were outside bounds during a minimize step, clipping to bounds
+  fx = wrapped_fun(x)
+/Users/iurii/Library/Python/3.9/lib/python/site-packages/scipy/optimize/_slsqp_py.py:441: RuntimeWarning: Values in x were outside bounds during a minimize step, clipping to bounds
+  g = append(wrapped_grad(x), 0.0)
+/Users/iurii/Library/Python/3.9/lib/python/site-packages/scipy/optimize/_slsqp_py.py:495: RuntimeWarning: Values in x were outside bounds during a minimize step, clipping to bounds
+  a_eq = vstack([con['jac'](x, *con['args'])
+Шаг 135/251 (53%): 2016-03-16
+  μ range: [-1.2157, 1.0507]
+  top-3: VZ:20.0%, DUK:20.0%, MMM:20.0%, std=0.075
+/Users/iurii/Library/Python/3.9/lib/python/site-packages/scipy/optimize/_slsqp_py.py:437: RuntimeWarning: Values in x were outside bounds during a minimize step, clipping to bounds
+  fx = wrapped_fun(x)
+Шаг 140/251 (55%): 2016-08-15
+  μ range: [-2.2644, 2.6841]
+  top-3: MSFT:20.0%, AAPL:20.0%, DUK:20.0%, std=0.073
+Шаг 145/251 (57%): 2017-01-13
+  μ range: [-1.2449, 1.4978]
+  top-3: XOM:20.0%, JNJ:20.0%, VZ:18.8%, std=0.071
+Шаг 150/251 (59%): 2017-06-15
+  μ range: [-1.4209, 0.7334]
+  top-3: CVX:20.0%, JPM:20.0%, MMM:20.0%, std=0.075
+Шаг 155/251 (61%): 2017-11-13
+  μ range: [-0.9342, 2.6073]
+  top-3: INTC:20.0%, CAT:20.0%, JNJ:16.7%, std=0.069
+/Users/iurii/Library/Python/3.9/lib/python/site-packages/scipy/optimize/_slsqp_py.py:437: RuntimeWarning: Values in x were outside bounds during a minimize step, clipping to bounds
+  fx = wrapped_fun(x)
+Шаг 160/251 (63%): 2018-04-17
+  μ range: [-1.4454, 0.7633]
+  top-3: CVX:20.0%, CAT:20.0%, DUK:20.0%, std=0.070
+Шаг 165/251 (65%): 2018-09-14
+  μ range: [-1.7423, 1.1431]
+  top-3: JNJ:20.0%, VZ:20.0%, PFE:20.0%, std=0.071
+/Users/iurii/Library/Python/3.9/lib/python/site-packages/scipy/optimize/_slsqp_py.py:437: RuntimeWarning: Values in x were outside bounds during a minimize step, clipping to bounds
+  fx = wrapped_fun(x)
+Шаг 170/251 (67%): 2019-02-15
+  μ range: [-1.1460, 0.7612]
+  top-3: XOM:20.0%, INTC:20.0%, CVX:20.0%, std=0.075
+Шаг 175/251 (69%): 2019-07-18
+  μ range: [-1.1033, 1.7658]
+  top-3: UNH:20.0%, CAT:20.0%, JNJ:20.0%, std=0.073
+Шаг 180/251 (71%): 2019-12-16
+  μ range: [-1.4465, 1.2662]
+  top-3: CAT:20.0%, PFE:20.0%, JPM:20.0%, std=0.069
+/Users/iurii/Library/Python/3.9/lib/python/site-packages/scipy/optimize/_slsqp_py.py:437: RuntimeWarning: Values in x were outside bounds during a minimize step, clipping to bounds
+  fx = wrapped_fun(x)
+Шаг 185/251 (73%): 2020-05-18
+  μ range: [-2.4129, 4.2347]
+  top-3: CVX:20.0%, NEM:20.0%, HD:20.0%, std=0.071
+Шаг 190/251 (75%): 2020-10-15
+  μ range: [-2.5839, 2.3279]
+  top-3: PFE:20.0%, MSFT:20.0%, INTC:20.0%, std=0.075
+Шаг 195/251 (77%): 2021-03-18
+  μ range: [-2.6481, 1.5652]
+  top-3: INTC:20.0%, GS:20.0%, XOM:16.6%, std=0.071
+Шаг 200/251 (79%): 2021-08-17
+  μ range: [-1.0517, 2.0397]
+  top-3: WFC:20.0%, CAT:20.0%, DUK:20.0%, std=0.075
+Шаг 205/251 (81%): 2022-01-14
+  μ range: [-0.7313, 0.6395]
+  top-3: UNH:20.0%, VZ:20.0%, JPM:17.4%, std=0.068
+Шаг 210/251 (83%): 2022-06-16
+  μ range: [-1.4912, 0.9064]
+  top-3: JPM:20.0%, MSFT:20.0%, HD:20.0%, std=0.075
+Шаг 215/251 (85%): 2022-11-15
+  μ range: [-0.8161, 1.5623]
+  top-3: NEM:20.0%, JPM:20.0%, INTC:20.0%, std=0.071
+/Users/iurii/Library/Python/3.9/lib/python/site-packages/scipy/optimize/_slsqp_py.py:437: RuntimeWarning: Values in x were outside bounds during a minimize step, clipping to bounds
+  fx = wrapped_fun(x)
+/Users/iurii/Library/Python/3.9/lib/python/site-packages/scipy/optimize/_slsqp_py.py:441: RuntimeWarning: Values in x were outside bounds during a minimize step, clipping to bounds
+  g = append(wrapped_grad(x), 0.0)
+/Users/iurii/Library/Python/3.9/lib/python/site-packages/scipy/optimize/_slsqp_py.py:495: RuntimeWarning: Values in x were outside bounds during a minimize step, clipping to bounds
+  a_eq = vstack([con['jac'](x, *con['args'])
+Шаг 220/251 (87%): 2023-04-19
+  μ range: [-0.8174, 0.8084]
+  top-3: KO:20.0%, MSFT:20.0%, GS:19.4%, std=0.073
+Шаг 225/251 (89%): 2023-09-19
+  μ range: [-1.5739, 0.7430]
+  top-3: CAT:20.0%, VZ:20.0%, KO:20.0%, std=0.073
+/Users/iurii/Library/Python/3.9/lib/python/site-packages/scipy/optimize/_slsqp_py.py:437: RuntimeWarning: Values in x were outside bounds during a minimize step, clipping to bounds
+  fx = wrapped_fun(x)
+/Users/iurii/Library/Python/3.9/lib/python/site-packages/scipy/optimize/_slsqp_py.py:441: RuntimeWarning: Values in x were outside bounds during a minimize step, clipping to bounds
+  g = append(wrapped_grad(x), 0.0)
+/Users/iurii/Library/Python/3.9/lib/python/site-packages/scipy/optimize/_slsqp_py.py:495: RuntimeWarning: Values in x were outside bounds during a minimize step, clipping to bounds
+  a_eq = vstack([con['jac'](x, *con['args'])
+Шаг 230/251 (91%): 2024-02-20
+  μ range: [-2.4545, 1.7064]
+  top-3: CAT:20.0%, NEM:20.0%, PG:20.0%, std=0.075
+Шаг 235/251 (93%): 2024-07-22
+  μ range: [-1.3560, 1.8915]
+  top-3: UNH:20.0%, CAT:20.0%, JNJ:20.0%, std=0.074
+Шаг 240/251 (95%): 2024-12-18
+  μ range: [-1.3704, 3.2096]
+  top-3: HD:20.0%, VZ:20.0%, MSFT:20.0%, std=0.075
+Шаг 245/251 (97%): 2025-05-22
+  μ range: [-2.8764, 1.1682]
+  top-3: NEM:20.0%, HD:20.0%, KO:20.0%, std=0.075
+/Users/iurii/Library/Python/3.9/lib/python/site-packages/scipy/optimize/_slsqp_py.py:437: RuntimeWarning: Values in x were outside bounds during a minimize step, clipping to bounds
+  fx = wrapped_fun(x)
+/Users/iurii/Library/Python/3.9/lib/python/site-packages/scipy/optimize/_slsqp_py.py:437: RuntimeWarning: Values in x were outside bounds during a minimize step, clipping to bounds
+  fx = wrapped_fun(x)
+Шаг 250/251 (99%): 2025-10-22
+  μ range: [-0.8885, 3.3151]
+  top-3: CAT:20.0%, UNH:20.0%, KO:20.0%, std=0.073
+
+Завершено. Всего периодов: 251
+      Sharpe: 0.92 (net: 0.87), оборот: 111.9%/мес
+      RMSE: 0.107867, MAE: 0.074560, Hit Rate: 51.29%
+
+Бенчмарки...
+      1/N Sharpe: 0.66, оборот: 4.3%/мес
+      SPY B&H Sharpe: 0.48
+
+============================================================
+ПОРТФЕЛЬНЫЕ МЕТРИКИ, ПОЛНЫЙ ПЕРИОД: БЕЗ ИЗДЕРЖЕК (GROSS)
+============================================================
+
+Метрика                     Baseline 1       StatsF     PatchTST  PT-ICEEMDAN          1/N      SPY B&H
+-------------------------------------------------------------------------------------------------------
+Annual Return                   14.83%       14.85%       12.26%       17.81%       13.13%       10.75%
+Annual Volatility               15.40%       16.24%       15.87%       14.99%       14.49%       16.06%
+Sharpe Ratio                      0.73         0.70         0.57         0.92         0.66         0.48
+Calmar Ratio                      0.45         0.42         0.23         0.52         0.35         0.21
+Max Drawdown                   -33.26%      -35.60%      -53.33%      -34.25%      -37.33%      -50.24%
+Total Return                  1702.84%     1711.10%     1023.36%     2982.81%     1219.43%      747.09%
+Avg Turnover/мес                18.17%       49.90%      113.31%      111.94%        4.29%        0.00%
+
+============================================================
+ПОРТФЕЛЬНЫЕ МЕТРИКИ, ПОЛНЫЙ ПЕРИОД: С ИЗДЕРЖКАМИ 0.05% (NET)
+============================================================
+
+Метрика                     Baseline 1       StatsF     PatchTST  PT-ICEEMDAN          1/N      SPY B&H
+-------------------------------------------------------------------------------------------------------
+Annual Return                   14.70%       14.51%       11.51%       17.03%       13.10%       10.75%
+Annual Volatility               15.40%       16.24%       15.86%       14.99%       14.49%       16.06%
+Sharpe Ratio                      0.72         0.68         0.52         0.87         0.66         0.48
+Calmar Ratio                      0.44         0.40         0.21         0.49         0.35         0.21
+Max Drawdown                   -33.34%      -35.92%      -53.75%      -34.87%      -37.37%      -50.24%
+Total Return                  1662.70%     1602.35%      875.68%     2583.57%     1212.42%      747.09%
+Avg Turnover/мес                18.17%       49.90%      113.31%      111.94%        4.29%        0.00%
+
+============================================================
+SHARPE ПО ПЕРИОДАМ (net): validation <= 2014-12-31 < holdout
+============================================================
+
+Период                      Baseline 1       StatsF     PatchTST  PT-ICEEMDAN          1/N      SPY B&H
+-------------------------------------------------------------------------------------------------------
+full                              0.72         0.68         0.52         0.87         0.66         0.48
+validation                        0.68         0.73         0.31         0.86         0.56         0.29
+holdout                           0.75         0.63         0.75         0.88         0.75         0.66
+
+============================================================
+РЕЗУЛЬТАТЫ: МЕТРИКИ ПРОГНОЗОВ
+============================================================
+
+Метрика                     Baseline 1       StatsF     PatchTST  PT-ICEEMDAN
+-----------------------------------------------------------------------------
+RMSE                          0.073829     0.074992     0.094586     0.107867
+MAE                           0.052562     0.053246     0.066185     0.074560
+HIT_RATE                        56.73%       54.05%       51.43%       51.29%
+
+Результаты сохранены в: /Users/iurii/Documents/ВКР/VKR_Patch/results/
+  - comparison_full|validation|holdout_20260612_091600.csv
+  - metrics_20260612_091600.json
+  - *_returns_20260612_091600.csv, *_returns_net_20260612_091600.csv
+  - *_forecasts_20260612_091600.csv
+  - *_weights_20260612_091600.csv
+
+============================================================
+ВИЗУАЛИЗАЦИЯ РЕЗУЛЬТАТОВ
+============================================================
+
+График сохранен: /Users/iurii/Documents/ВКР/VKR_Patch/results/cumulative_returns_20260612_091600.png
+/Users/iurii/Documents/ВКР/VKR_Patch/run_all.py:568: UserWarning: FigureCanvasAgg is non-interactive, and thus cannot be shown
+  plt.show()
+
+Рост капитала с издержками ($1 → $X):
+  Baseline 1: $1 → $17.63
+  StatsF: $1 → $17.02
+  PatchTST: $1 → $9.76
+  PT-ICEEMDAN: $1 → $26.84
+  1/N: $1 → $13.12
+  SPY B&H: $1 → $8.47
+
+============================================================
+АНАЛИЗ РАЗЛИЧИЙ ВЕСОВ: BASELINE1 vs PATCHTST
+============================================================
+
+📉 TOP-5 ХУДШИХ ПЕРИОДОВ ДЛЯ BASELINE1:
+------------------------------------------------------------
+
+2008-09-11: B1=-26.08%, PT=-30.83% (разница: -4.75%)
+  PatchTST держит больше: GS:+19.0%, UNH:+17.5%, JNJ:+15.0%
+  PatchTST держит меньше: AAPL:-19.0%, DUK:-17.8%, CVX:-15.7%
+
+2020-02-18: B1=-25.13%, PT=-23.86% (разница: +1.27%)
+  PatchTST держит больше: GS:+19.0%, JNJ:+19.0%, AAPL:+11.2%
+  PatchTST держит меньше: MSFT:-19.0%, UNH:-18.4%, HD:-8.7%
+
+2008-01-11: B1=-12.78%, PT=-13.78% (разница: -1.00%)
+  PatchTST держит больше: VZ:+19.0%, JNJ:+4.0%, NEM:+0.0%
+  PatchTST держит меньше: UNH:-11.8%, PG:-9.1%, CAT:-1.7%
+
+2022-04-18: B1=-11.24%, PT=-5.40% (разница: +5.83%)
+  PatchTST держит больше: CVX:+19.0%, XOM:+19.0%, PFE:+19.0%
+  PatchTST держит меньше: AAPL:-19.0%, MSFT:-19.0%, UNH:-19.0%
+
+2006-05-11: B1=-10.74%, PT=-7.50% (разница: +3.24%)
+  PatchTST держит больше: MSFT:+19.0%, MCD:+19.0%, WFC:+19.0%
+  PatchTST держит меньше: UNH:-19.0%, NEM:-19.0%, AAPL:-14.9%
+
+
+📊 СРЕДНИЕ РАЗЛИЧИЯ В ВЕСАХ (стратегия - Baseline1):
+------------------------------------------------------------
+
+PatchTST в среднем держит МЕНЬШЕ:
+  AAPL: -8.2%
+  UNH: -6.0%
+  HD: -3.4%
+  MSFT: -3.1%
+  MCD: -2.7%
+
+PatchTST в среднем держит БОЛЬШЕ:
+  JNJ: +2.2%
+  WFC: +2.3%
+  PFE: +3.0%
+  VZ: +3.2%
+  INTC: +3.3%
+
+
+📈 АМПЛИТУДА ИЗМЕНЕНИЙ ВЕСОВ И ОБОРОТ:
+------------------------------------------------------------
+  Среднее |Δвес| за ребалансировку: Baseline1 0.83%, PatchTST 5.64% (6.79x)
+  Средний оборот/мес (против дрейфованных весов): Baseline1 18.2%, PatchTST 113.3%
+  (ребалансировка у всех стратегий ежемесячная; различается размер сделок)
+
+✅ Анализ сохранён: /Users/iurii/Documents/ВКР/VKR_Patch/results/weight_analysis_patchtst_20260612_091600.txt
+
+============================================================
+АНАЛИЗ РАЗЛИЧИЙ ВЕСОВ: BASELINE1 vs PATCHTST + ICEEMDAN
+============================================================
+
+📉 TOP-5 ХУДШИХ ПЕРИОДОВ ДЛЯ BASELINE1:
+------------------------------------------------------------
+
+2008-09-11: B1=-26.08%, PT=-25.54% (разница: +0.55%)
+  PatchTST + ICEEMDAN держит больше: UNH:+19.0%, JNJ:+15.0%, PG:+14.5%
+  PatchTST + ICEEMDAN держит меньше: AAPL:-19.0%, DUK:-17.8%, CVX:-15.7%
+
+2020-02-18: B1=-25.13%, PT=-21.15% (разница: +3.99%)
+  PatchTST + ICEEMDAN держит больше: KO:+19.0%, NEM:+10.3%, DUK:+0.9%
+  PatchTST + ICEEMDAN держит меньше: UNH:-18.4%, HD:-8.7%, JPM:-3.1%
+
+2008-01-11: B1=-12.78%, PT=-10.23% (разница: +2.55%)
+  PatchTST + ICEEMDAN держит больше: NEM:+19.0%, VZ:+19.0%, DUK:+18.5%
+  PatchTST + ICEEMDAN держит меньше: MCD:-19.0%, AAPL:-19.0%, UNH:-11.8%
+
+2022-04-18: B1=-11.24%, PT=-10.84% (разница: +0.40%)
+  PatchTST + ICEEMDAN держит больше: PFE:+19.0%, CAT:+17.1%, VZ:+4.4%
+  PatchTST + ICEEMDAN держит меньше: UNH:-19.0%, MSFT:-19.0%, PG:-2.1%
+
+2006-05-11: B1=-10.74%, PT=-9.42% (разница: +1.32%)
+  PatchTST + ICEEMDAN держит больше: INTC:+19.0%, MMM:+19.0%, JPM:+8.4%
+  PatchTST + ICEEMDAN держит меньше: CAT:-19.0%, AAPL:-14.9%, PG:-8.1%
+
+
+📊 СРЕДНИЕ РАЗЛИЧИЯ В ВЕСАХ (стратегия - Baseline1):
+------------------------------------------------------------
+
+PatchTST + ICEEMDAN в среднем держит МЕНЬШЕ:
+  AAPL: -9.3%
+  UNH: -5.7%
+  MCD: -4.1%
+  MSFT: -3.9%
+  HD: -3.4%
+
+PatchTST + ICEEMDAN в среднем держит БОЛЬШЕ:
+  MMM: +2.1%
+  JNJ: +2.7%
+  VZ: +3.4%
+  PFE: +3.6%
+  INTC: +3.7%
+
+
+📈 АМПЛИТУДА ИЗМЕНЕНИЙ ВЕСОВ И ОБОРОТ:
+------------------------------------------------------------
+  Среднее |Δвес| за ребалансировку: Baseline1 0.83%, PatchTST + ICEEMDAN 5.58% (6.71x)
+  Средний оборот/мес (против дрейфованных весов): Baseline1 18.2%, PatchTST + ICEEMDAN 111.9%
+  (ребалансировка у всех стратегий ежемесячная; различается размер сделок)
+
+✅ Анализ сохранён: /Users/iurii/Documents/ВКР/VKR_Patch/results/weight_analysis_patchtst_iceemdan_20260612_091600.txt

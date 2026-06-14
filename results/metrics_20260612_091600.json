@@ -1,0 +1,442 @@
+{
+  "timestamp": "20260612_091600",
+  "config": {
+    "train_window": 1260,
+    "test_window": 21,
+    "data_end": null,
+    "risk_free_rate": 0.04,
+    "patchtst_mode": "full",
+    "padding_patch": true,
+    "cost_rate": 0.0005,
+    "validation_end": "2014-12-31",
+    "iceemdan": {
+      "trials": 50,
+      "epsilon": 0.2,
+      "seed": 42,
+      "max_imf": -1,
+      "grouping": {
+        "noise_max_period": 5,
+        "cycle_max_period": 63
+      },
+      "forecast_noise": true,
+      "cache": {
+        "enabled": true,
+        "dir": "data/cache/iceemdan"
+      }
+    }
+  },
+  "metrics": {
+    "baseline1": {
+      "full": {
+        "gross": {
+          "Annual Return": 0.14827463221314297,
+          "Annual Volatility": 0.15398616232533857,
+          "Sharpe Ratio": 0.7272502817415235,
+          "Calmar Ratio": 0.44586860136740025,
+          "Max Drawdown": -0.332552307469983,
+          "Total Return": 17.028407477138245,
+          "Num Periods": 251
+        },
+        "net": {
+          "Annual Return": 0.14703928380835518,
+          "Annual Volatility": 0.15396868474412628,
+          "Sharpe Ratio": 0.7202510443676423,
+          "Calmar Ratio": 0.44106118153137497,
+          "Max Drawdown": -0.333376161778353,
+          "Total Return": 16.627035198849654,
+          "Num Periods": 251
+        },
+        "avg_turnover": 0.1817289914215368
+      },
+      "validation": {
+        "gross": {
+          "Annual Return": 0.1441933163622473,
+          "Annual Volatility": 0.15751247198875679,
+          "Sharpe Ratio": 0.691977947397381,
+          "Calmar Ratio": 0.43359589791829234,
+          "Max Drawdown": -0.332552307469983,
+          "Total Return": 2.845865269252911,
+          "Num Periods": 120
+        },
+        "net": {
+          "Annual Return": 0.142846112585012,
+          "Annual Volatility": 0.15749685716549267,
+          "Sharpe Ratio": 0.6844713018851069,
+          "Calmar Ratio": 0.42848328393673224,
+          "Max Drawdown": -0.333376161778353,
+          "Total Return": 2.800822196766264,
+          "Num Periods": 120
+        },
+        "avg_turnover": 0.19884636489831486
+      },
+      "holdout": {
+        "gross": {
+          "Annual Return": 0.15202601653980352,
+          "Annual Volatility": 0.15128556337803725,
+          "Sharpe Ratio": 0.758344818031996,
+          "Calmar Ratio": 0.6840724637491068,
+          "Max Drawdown": -0.22223671408525106,
+          "Total Return": 3.687737664985967,
+          "Num Periods": 131
+        },
+        "net": {
+          "Annual Return": 0.15089385673106626,
+          "Annual Volatility": 0.1512659300386345,
+          "Sharpe Ratio": 0.7518568740088702,
+          "Calmar Ratio": 0.6786845839346436,
+          "Max Drawdown": -0.2223328189602685,
+          "Total Return": 3.6376900276594677,
+          "Num Periods": 131
+        },
+        "avg_turnover": 0.1660489546489157
+      }
+    },
+    "baseline2": {
+      "full": {
+        "gross": {
+          "Annual Return": 0.1485257146932133,
+          "Annual Volatility": 0.16240943933354418,
+          "Sharpe Ratio": 0.6995208200481312,
+          "Calmar Ratio": 0.41721199850572666,
+          "Max Drawdown": -0.35599578925143166,
+          "Total Return": 17.111042933276597,
+          "Num Periods": 251
+        },
+        "net": {
+          "Annual Return": 0.14513035867555657,
+          "Annual Volatility": 0.1623870702209619,
+          "Sharpe Ratio": 0.6811795042498008,
+          "Calmar Ratio": 0.4040227364243376,
+          "Max Drawdown": -0.3592133451695868,
+          "Total Return": 16.023502548025228,
+          "Num Periods": 251
+        },
+        "avg_turnover": 0.49900669941093545
+      },
+      "validation": {
+        "gross": {
+          "Annual Return": 0.16298494802018282,
+          "Annual Volatility": 0.1689872716083602,
+          "Sharpe Ratio": 0.7519717477334791,
+          "Calmar Ratio": 0.4578283028653192,
+          "Max Drawdown": -0.35599578925143166,
+          "Total Return": 3.5262750243469663,
+          "Num Periods": 120
+        },
+        "net": {
+          "Annual Return": 0.15902616924039603,
+          "Annual Volatility": 0.1689330745009509,
+          "Sharpe Ratio": 0.7317519981628328,
+          "Calmar Ratio": 0.44270674065663906,
+          "Max Drawdown": -0.3592133451695868,
+          "Total Return": 3.3745402675049148,
+          "Num Periods": 120
+        },
+        "avg_turnover": 0.5760898590315364
+      },
+      "holdout": {
+        "gross": {
+          "Annual Return": 0.1354384312458501,
+          "Annual Volatility": 0.15670858851341965,
+          "Sharpe Ratio": 0.6462603822692299,
+          "Calmar Ratio": 0.5150886384441673,
+          "Max Drawdown": -0.2629419892757562,
+          "Total Return": 3.001312963939828,
+          "Num Periods": 131
+        },
+        "net": {
+          "Annual Return": 0.1325476243312862,
+          "Annual Volatility": 0.15672325475113674,
+          "Sharpe Ratio": 0.6297991669787785,
+          "Calmar Ratio": 0.5037173502415329,
+          "Max Drawdown": -0.26313888983123074,
+          "Total Return": 2.8914952216761343,
+          "Num Periods": 131
+        },
+        "avg_turnover": 0.4283961715142018
+      }
+    },
+    "patchtst": {
+      "full": {
+        "gross": {
+          "Annual Return": 0.12259757045386244,
+          "Annual Volatility": 0.15865555026306094,
+          "Sharpe Ratio": 0.5673164053570126,
+          "Calmar Ratio": 0.2298985595892738,
+          "Max Drawdown": -0.5332681103913379,
+          "Total Return": 10.233645533108334,
+          "Num Periods": 251
+        },
+        "net": {
+          "Annual Return": 0.1150583514171386,
+          "Annual Volatility": 0.1586299015799277,
+          "Sharpe Ratio": 0.5245493493676416,
+          "Calmar Ratio": 0.2140552319905484,
+          "Max Drawdown": -0.5375171181156599,
+          "Total Return": 8.756813957099546,
+          "Num Periods": 251
+        },
+        "avg_turnover": 1.1331141335290793
+      },
+      "validation": {
+        "gross": {
+          "Annual Return": 0.08620139213405453,
+          "Annual Volatility": 0.16795907594445023,
+          "Sharpe Ratio": 0.34883909720365247,
+          "Calmar Ratio": 0.16164737859684838,
+          "Max Drawdown": -0.5332681103913379,
+          "Total Return": 1.2861438336071447,
+          "Num Periods": 120
+        },
+        "net": {
+          "Annual Return": 0.07886852821534318,
+          "Annual Volatility": 0.16789724659175284,
+          "Sharpe Ratio": 0.3083376502096089,
+          "Calmar Ratio": 0.14672747259069188,
+          "Max Drawdown": -0.5375171181156599,
+          "Total Return": 1.136413159186902,
+          "Num Periods": 120
+        },
+        "avg_turnover": 1.136941654809548
+      },
+      "holdout": {
+        "gross": {
+          "Annual Return": 0.1570068323112832,
+          "Annual Volatility": 0.149793807360608,
+          "Sharpe Ratio": 0.793003507741048,
+          "Calmar Ratio": 0.7356905546100871,
+          "Max Drawdown": -0.21341422875069554,
+          "Total Return": 3.913796484704796,
+          "Num Periods": 131
+        },
+        "net": {
+          "Annual Return": 0.14927367966051253,
+          "Annual Volatility": 0.14980430811397785,
+          "Sharpe Ratio": 0.747704575669717,
+          "Calmar Ratio": 0.6908355236013473,
+          "Max Drawdown": -0.2160770176992986,
+          "Total Return": 3.5669134339225375,
+          "Num Periods": 131
+        },
+        "avg_turnover": 1.129608007165291
+      }
+    },
+    "patchtst_iceemdan": {
+      "full": {
+        "gross": {
+          "Annual Return": 0.1781069473975947,
+          "Annual Volatility": 0.14993089629324405,
+          "Sharpe Ratio": 0.9152297535371497,
+          "Calmar Ratio": 0.520089186587158,
+          "Max Drawdown": -0.34245462507370755,
+          "Total Return": 29.82811700951989,
+          "Num Periods": 251
+        },
+        "net": {
+          "Annual Return": 0.17032106742191866,
+          "Annual Volatility": 0.14991128996004496,
+          "Sharpe Ratio": 0.8705461262940328,
+          "Calmar Ratio": 0.4883820384208041,
+          "Max Drawdown": -0.34874555987492134,
+          "Total Return": 25.835729030266076,
+          "Num Periods": 251
+        },
+        "avg_turnover": 1.119420749935163
+      },
+      "validation": {
+        "gross": {
+          "Annual Return": 0.18245427446870277,
+          "Annual Volatility": 0.15805464039007744,
+          "Sharpe Ratio": 0.8999091566376658,
+          "Calmar Ratio": 0.5327837941433339,
+          "Max Drawdown": -0.34245462507370755,
+          "Total Return": 4.343718297794903,
+          "Num Periods": 120
+        },
+        "net": {
+          "Annual Return": 0.17482181872582214,
+          "Annual Volatility": 0.15801619610225376,
+          "Sharpe Ratio": 0.8585813435147309,
+          "Calmar Ratio": 0.5012875828111547,
+          "Max Drawdown": -0.34874555987492134,
+          "Total Return": 4.008642521524566,
+          "Num Periods": 120
+        },
+        "avg_turnover": 1.0941766982573162
+      },
+      "holdout": {
+        "gross": {
+          "Annual Return": 0.17413869078737299,
+          "Annual Volatility": 0.1426821574249072,
+          "Sharpe Ratio": 0.9295388306993205,
+          "Calmar Ratio": 0.8475530816924124,
+          "Max Drawdown": -0.2054605127972033,
+          "Total Return": 4.7690385779207665,
+          "Num Periods": 131
+        },
+        "net": {
+          "Annual Return": 0.16621337486942633,
+          "Annual Volatility": 0.1426807217921905,
+          "Sharpe Ratio": 0.8815019559901873,
+          "Calmar Ratio": 0.8048194677708272,
+          "Max Drawdown": -0.20652255757406165,
+          "Total Return": 4.3578846793197785,
+          "Num Periods": 131
+        },
+        "avg_turnover": 1.142545072082809
+      }
+    },
+    "equal_weight": {
+      "full": {
+        "gross": {
+          "Annual Return": 0.13126484653360548,
+          "Annual Volatility": 0.14489893386532257,
+          "Sharpe Ratio": 0.6588499894246397,
+          "Calmar Ratio": 0.3516007742243992,
+          "Max Drawdown": -0.3733349189095625,
+          "Total Return": 12.194302540477992,
+          "Num Periods": 251
+        },
+        "net": {
+          "Annual Return": 0.13097659187022215,
+          "Annual Volatility": 0.1448986700405593,
+          "Sharpe Ratio": 0.6570762505537199,
+          "Calmar Ratio": 0.3505286721432312,
+          "Max Drawdown": -0.37365443194530795,
+          "Total Return": 12.1241587335681,
+          "Num Periods": 251
+        },
+        "avg_turnover": 0.042864370723008506
+      },
+      "validation": {
+        "gross": {
+          "Annual Return": 0.11982837295045257,
+          "Annual Volatility": 0.15237617667709644,
+          "Sharpe Ratio": 0.566216868002806,
+          "Calmar Ratio": 0.32096749294292526,
+          "Max Drawdown": -0.3733349189095625,
+          "Total Return": 2.101092135671766,
+          "Num Periods": 120
+        },
+        "net": {
+          "Annual Return": 0.11954989810649641,
+          "Annual Volatility": 0.15237805908514607,
+          "Sharpe Ratio": 0.5645663166770765,
+          "Calmar Ratio": 0.3199477589068046,
+          "Max Drawdown": -0.37365443194530795,
+          "Total Return": 2.093389076608487,
+          "Num Periods": 120
+        },
+        "avg_turnover": 0.04174032604082194
+      },
+      "holdout": {
+        "gross": {
+          "Annual Return": 0.14184347427177002,
+          "Annual Volatility": 0.13823909346557214,
+          "Sharpe Ratio": 0.751479106087526,
+          "Calmar Ratio": 0.6538861319025027,
+          "Max Drawdown": -0.21692381494477012,
+          "Total Return": 3.254727677615363,
+          "Num Periods": 131
+        },
+        "net": {
+          "Annual Return": 0.14154611128124972,
+          "Annual Volatility": 0.13823672834023304,
+          "Sharpe Ratio": 0.7495867954063612,
+          "Calmar Ratio": 0.6524353991792589,
+          "Max Drawdown": -0.21695038537042874,
+          "Total Return": 3.2426472740884877,
+          "Num Periods": 131
+        },
+        "avg_turnover": 0.043894029973866426
+      }
+    },
+    "spy_buyhold": {
+      "full": {
+        "gross": {
+          "Annual Return": 0.10754968623045569,
+          "Annual Volatility": 0.16063421847351914,
+          "Sharpe Ratio": 0.47838688696790843,
+          "Calmar Ratio": 0.21405153689178705,
+          "Max Drawdown": -0.5024476244934744,
+          "Total Return": 7.470921386684083,
+          "Num Periods": 251
+        },
+        "net": {
+          "Annual Return": 0.10754968623045569,
+          "Annual Volatility": 0.16063421847351914,
+          "Sharpe Ratio": 0.47838688696790843,
+          "Calmar Ratio": 0.21405153689178705,
+          "Max Drawdown": -0.5024476244934744,
+          "Total Return": 7.470921386684083,
+          "Num Periods": 251
+        },
+        "avg_turnover": 0.0
+      },
+      "validation": {
+        "gross": {
+          "Annual Return": 0.07642979706923492,
+          "Annual Volatility": 0.16785856542703514,
+          "Sharpe Ratio": 0.294247401513592,
+          "Calmar Ratio": 0.1521149535661255,
+          "Max Drawdown": -0.5024476244934744,
+          "Total Return": 1.0886088375933882,
+          "Num Periods": 120
+        },
+        "net": {
+          "Annual Return": 0.07642979706923492,
+          "Annual Volatility": 0.16785856542703514,
+          "Sharpe Ratio": 0.294247401513592,
+          "Calmar Ratio": 0.1521149535661255,
+          "Max Drawdown": -0.5024476244934744,
+          "Total Return": 1.0886088375933882,
+          "Num Periods": 120
+        },
+        "avg_turnover": 0.0
+      },
+      "holdout": {
+        "gross": {
+          "Annual Return": 0.1368453584672915,
+          "Annual Volatility": 0.1540078396163391,
+          "Sharpe Ratio": 0.6622612022121949,
+          "Calmar Ratio": 0.5447993915760703,
+          "Max Drawdown": -0.2511848592036906,
+          "Total Return": 3.0557720690508763,
+          "Num Periods": 131
+        },
+        "net": {
+          "Annual Return": 0.1368453584672915,
+          "Annual Volatility": 0.1540078396163391,
+          "Sharpe Ratio": 0.6622612022121949,
+          "Calmar Ratio": 0.5447993915760703,
+          "Max Drawdown": -0.2511848592036906,
+          "Total Return": 3.0557720690508763,
+          "Num Periods": 131
+        },
+        "avg_turnover": 0.0
+      }
+    }
+  },
+  "forecast_metrics": {
+    "baseline1": {
+      "rmse": 0.07382887079860061,
+      "mae": 0.05256184383295275,
+      "hit_rate": 0.5673306772908366
+    },
+    "baseline2": {
+      "rmse": 0.0749915045690002,
+      "mae": 0.05324580134772784,
+      "hit_rate": 0.5404950732996876
+    },
+    "patchtst": {
+      "rmse": 0.09458644034207518,
+      "mae": 0.06618507486334263,
+      "hit_rate": 0.5143426294820718
+    },
+    "patchtst_iceemdan": {
+      "rmse": 0.10786714885835189,
+      "mae": 0.07456000846132967,
+      "hit_rate": 0.5129482071713147
+    }
+  }
+}

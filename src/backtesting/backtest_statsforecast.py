@@ -294,6 +294,10 @@ if __name__ == "__main__":
     # Загружаем данные
     data_path = Path(__file__).parent.parent.parent / "data" / "raw" / "log_returns.csv"
     returns = pd.read_csv(data_path, index_col=0, parse_dates=True)
+    data_end = config['backtest'].get('data_end')
+    if data_end:
+        returns = returns.loc[:data_end]
+        print(f"Данные обрезаны по backtest.data_end = {data_end}")
     results_path = Path(__file__).parent.parent.parent / "results"
     results_path.mkdir(exist_ok=True)
 

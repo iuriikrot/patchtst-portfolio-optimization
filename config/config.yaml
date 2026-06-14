@@ -37,14 +37,20 @@ data:
     - VZ
     # Materials (1)
     - NEM
-  start_date: "2010-01-01"
-  end_date: "2025-01-01"
+  start_date: "2000-01-01"
+  end_date: "2026-01-15"
   price_column: "Adj Close"
+  benchmark_ticker: "SPY"           # Бенчмарк buy-and-hold (качается отдельно)
 
 # Параметры бэктестинга
 backtest:
   train_window: 1260                # 5 лет (252 * 5)
   test_window: 21                   # 1 месяц
+  data_end: null                    # Обрезать данные до даты (ISO). Для тюнинга
+                                    # по validation-периоду: "2015-02-01" —
+                                    # validation_end + ~1 месяц, чтобы пограничный
+                                    # месяц (ребалансировка в декабре 2014) успел
+                                    # реализоваться целиком и попасть в validation
 
 # Параметры моделей
 models:
@@ -56,6 +62,16 @@ models:
 
   patchtst:
     mode: "full"                    # fast | full
+    n_workers: 1                    # Параллельных CPU-процессов по тикерам;
+                                    # 1 = последовательно на MPS/GPU.
+                                    # Замер на M4 Air: MPS (48 с/окно) быстрее и
+                                    # 8 CPU-воркеров (141 с), и 4 процессов на общем
+                                    # MPS (1.2x) — GPU насыщен. >1 имеет смысл только
+                                    # на машинах с большим числом быстрых ядер без GPU.
+    padding_patch: true             # ReplicationPad в конце окна (официальная
+                                    # реализация): без него последние дни окна
+                                    # не попадают в патчи. false = старое поведение.
+                                    # Влияет на обе PatchTST-стратегии.
 
     # Быстрый режим (для отладки)
     fast:
@@ -92,6 +108,30 @@ models:
       finetune_epochs: 10
       pretrain_lr: 0.005
       batch_size: 64
+
+  # Декомпозиция ICEEMDAN для стратегии PatchTST + ICEEMDAN.
+  # Архитектура сети наследуется из models.patchtst.{mode}
+  iceemdan:
+    trials: 50                      # Число реализаций шумового ансамбля CEEMDAN
+    epsilon: 0.2                    # Амплитуда добавляемого шума (доля std сигнала)
+    seed: 42                        # Seed шумового ансамбля (воспроизводимость)
+    max_imf: -1                     # -1 = без ограничения числа IMF
+    grouping:                       # Детерминированная группировка IMF в 3 канала
+      noise_max_period: 5           # Средний период < 5 дней  -> noise
+      cycle_max_period: 63          # 5..63 дня -> cycle; > 63 и residue -> trend
+    forecast_noise: true            # false = денойзинг: noise-канал в прогнозе -> 0
+    cache:
+      enabled: true
+      dir: "data/cache/iceemdan"    # Кэш декомпозиций (ключ = хэш окна + параметры)
+
+# Параметры оценки результатов
+evaluation:
+  transaction_costs:
+    cost_rate: 0.0005               # 5 б.п. на единицу оборота; метрики
+                                    # считаются с издержками (net) и без (gross)
+  split:
+    validation_end: "2014-12-31"    # Тестовые месяцы <= даты = validation (тюнинг
+                                    # гиперпараметров), после = holdout (финальная оценка)
 
 # Параметры оптимизации Марковица
 optimization:

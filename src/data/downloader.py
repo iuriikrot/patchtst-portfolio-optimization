@@ -86,6 +86,39 @@ def get_data(
     return prices
 
 
+def download_benchmark(ticker=None):
+    """
+    Скачивает бенчмарк (по умолчанию data.benchmark_ticker из config)
+    и сохраняет его лог-доходности в data/raw/benchmark_log_returns.csv.
+
+    Returns:
+        Series дневных лог-доходностей бенчмарка
+    """
+    ticker = ticker or _data_cfg.get("benchmark_ticker", "SPY")
+    print(f"Скачиваем бенчмарк {ticker}...")
+
+    prices = download_stock_data(
+        tickers=[ticker],
+        start_date=START_DATE,
+        end_date=END_DATE,
+        price_column=REQUIRED_PRICE_COLUMN,
+        auto_adjust=False
+    )
+    # При одном тикере yfinance может вернуть Series
+    if isinstance(prices, pd.DataFrame):
+        prices = prices.iloc[:, 0]
+    prices.name = ticker
+
+    log_returns = np.log(prices / prices.shift(1)).dropna()
+
+    save_path = Path(__file__).parent.parent.parent / "data" / "raw"
+    save_path.mkdir(parents=True, exist_ok=True)
+    log_returns.to_frame().to_csv(save_path / "benchmark_log_returns.csv")
+    print(f"Бенчмарк сохранён: benchmark_log_returns.csv ({len(log_returns)} строк)")
+
+    return log_returns
+
+
 def download_and_prepare_data():
     """
     Скачивает ценовую колонку из config и добавляет лог-доходности.
@@ -123,6 +156,12 @@ def download_and_prepare_data():
     print(f"\nСохранено:")
     print(f"  - prices.csv ({len(prices)} строк)")
     print(f"  - log_returns.csv ({len(log_returns)} строк)")
+
+    # 4. Бенчмарк для buy-and-hold сравнения
+    try:
+        download_benchmark()
+    except Exception as e:
+        print(f"Не удалось скачать бенчмарк: {e}")
 
     return prices, log_returns
 

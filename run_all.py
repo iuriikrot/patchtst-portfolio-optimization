@@ -6,6 +6,12 @@
 
 Результаты сохраняются в results/.
 Все параметры (включая режим PatchTST) берутся из config/config.yaml.
+
+Стратегии: Baseline 1 (hist mean), Baseline 2 (AutoARIMA), PatchTST,
+PatchTST + ICEEMDAN. Бенчмарки Equal Weight (1/N) и Buy & Hold (SPY)
+считаются всегда. Метрики выводятся без издержек (gross) и с
+транзакционными издержками (net), отдельно по периодам
+full / validation / holdout (см. evaluation в config).
 """
 
 import pandas as pd
@@ -25,15 +31,21 @@ warnings.filterwarnings('ignore', module='numpy')
 # Добавляем src в путь
 sys.path.insert(0, str(Path(__file__).parent / "src"))
 
-from optimization.markowitz import maximize_sharpe
-from optimization.covariance import compute_covariance
 from utils.forecast_metrics import aggregate_forecast_metrics
+from utils.portfolio_metrics import (
+    calculate_metrics,
+    compute_turnover_series,
+    apply_transaction_costs,
+    split_by_date,
+)
+from backtesting.benchmarks import run_equal_weight, run_buy_and_hold
 
 # Импортируем бэктесты по отдельности — чтобы отсутствие одной зависимости
 # не блокировало другие модели
 run_baseline1_backtest = None
 run_statsforecast = None
 run_patchtst_backtest = None
+run_patchtst_iceemdan_backtest = None
 
 try:
     from backtesting.backtest import run_backtest as run_baseline1_backtest
@@ -50,6 +62,11 @@ try:
 except ImportError:
     pass
 
+try:
+    from backtesting.backtest_patchtst_iceemdan import run_backtest as run_patchtst_iceemdan_backtest
+except ImportError:
+    pass
+
 # Загружаем конфигурацию
 config_path = Path(__file__).parent / "config" / "config.yaml"
 with open(config_path, 'r') as f:
@@ -58,63 +75,18 @@ with open(config_path, 'r') as f:
 # Параметры
 TRAIN_WINDOW = config['backtest']['train_window']
 TEST_WINDOW = config['backtest']['test_window']
+DATA_END = config['backtest'].get('data_end')
 RF = config['optimization']['risk_free_rate']
-CV_METHOD = config['optimization'].get('covariance', 'sample')
-CONSTRAINTS = config.get('optimization', {}).get('constraints', {})
-MIN_WEIGHT = CONSTRAINTS.get('min_weight', 0.0)
-MAX_WEIGHT = CONSTRAINTS.get('max_weight', 1.0)
-LONG_ONLY = CONSTRAINTS.get('long_only', True)
-FULLY_INVESTED = CONSTRAINTS.get('fully_invested', True)
-GROSS_EXPOSURE = CONSTRAINTS.get('gross_exposure')
 
- 
+EVAL_CFG = config.get('evaluation', {})
+COST_RATE = EVAL_CFG.get('transaction_costs', {}).get('cost_rate', 0.0)
+VALIDATION_END = EVAL_CFG.get('split', {}).get('validation_end', '2014-12-31')
 
-
-def calculate_metrics(returns, rf=0.02):
-    """Расчёт метрик портфеля (returns — месячные лог-доходности)."""
-    simple_returns = np.exp(returns) - 1
-    monthly_rf = (1 + rf) ** (1 / 12) - 1
-    excess = simple_returns - monthly_rf
-
-    if len(simple_returns) > 0:
-        annual_return = (1 + simple_returns).prod() ** (12 / len(simple_returns)) - 1
-    else:
-        annual_return = 0
-    annual_vol = simple_returns.std() * np.sqrt(12)
-    sharpe = (excess.mean() / simple_returns.std() * np.sqrt(12)) if simple_returns.std() > 0 else 0
-
-    cumulative = (1 + simple_returns).cumprod()
-    rolling_max = cumulative.expanding().max()
-    drawdown = (cumulative - rolling_max) / rolling_max
-    max_drawdown = drawdown.min()
-
-    total_return = (1 + simple_returns).prod() - 1
-
-    # Calmar Ratio = Annual Return / |Max Drawdown|
-    calmar = annual_return / abs(max_drawdown) if max_drawdown != 0 else 0
-
-    return {
-        'Annual Return': annual_return,
-        'Annual Volatility': annual_vol,
-        'Sharpe Ratio': sharpe,
-        'Calmar Ratio': calmar,
-        'Max Drawdown': max_drawdown,
-        'Total Return': total_return,
-        'Num Periods': len(returns)
-    }
-
-
-def compute_monthly_log_return(test_data, weights, fully_invested=True):
-    """Доходность за месяц при ребалансировке раз в месяц (buy-and-hold)."""
-    asset_gross = np.exp(test_data.sum(axis=0).values)
-    portfolio_gross = np.dot(weights, asset_gross)
-    if not fully_invested:
-        portfolio_gross += (1 - weights.sum())
-    return np.log(portfolio_gross)
+PERIODS = ['full', 'validation', 'holdout']
 
 
 # ============================================================
-# BASELINE 1: Историческое среднее
+# Обёртки стратегий
 # ============================================================
 
 def run_baseline1(returns, save_weights_path=None, collect_forecasts=False):
@@ -128,10 +100,6 @@ def run_baseline1(returns, save_weights_path=None, collect_forecasts=False):
     )
 
 
-# ============================================================
-# BASELINE 2: StatsForecast AutoARIMA
-# ============================================================
-
 def run_baseline2(returns, save_weights_path=None, collect_forecasts=False):
     """Бэктест: μ = прогноз StatsForecast AutoARIMA."""
     if run_statsforecast is None:
@@ -143,10 +111,6 @@ def run_baseline2(returns, save_weights_path=None, collect_forecasts=False):
     )
 
 
-# ============================================================
-# PATCHTST
-# ============================================================
-
 def run_patchtst(returns, save_weights_path=None, collect_forecasts=False):
     """Бэктест: μ = прогноз PatchTST. Режим берётся из config."""
     if run_patchtst_backtest is None:
@@ -156,6 +120,100 @@ def run_patchtst(returns, save_weights_path=None, collect_forecasts=False):
         save_weights_path=save_weights_path,
         collect_forecasts=collect_forecasts
     )
+
+
+def run_patchtst_iceemdan(returns, save_weights_path=None, collect_forecasts=False):
+    """Бэктест: μ = прогноз PatchTST по компонентам ICEEMDAN."""
+    if run_patchtst_iceemdan_backtest is None:
+        raise ImportError(
+            "PatchTST+ICEEMDAN недоступен: не удалось импортировать torch или PyEMD (EMD-signal)"
+        )
+    return run_patchtst_iceemdan_backtest(
+        returns,
+        save_weights_path=save_weights_path,
+        collect_forecasts=collect_forecasts
+    )
+
+
+# (key, подпись, префикс файлов, функция запуска)
+STRATEGY_SPECS = [
+    ('baseline1', 'Baseline 1 (Hist Mean)', 'baseline1', run_baseline1),
+    ('baseline2', 'Baseline 2 (StatsForecast)', 'statsforecast', run_baseline2),
+    ('patchtst', 'PatchTST', 'patchtst', run_patchtst),
+    ('patchtst_iceemdan', 'PatchTST + ICEEMDAN', 'patchtst_iceemdan', run_patchtst_iceemdan),
+]
+
+SHORT_LABELS = {
+    'baseline1': 'Baseline 1',
+    'baseline2': 'StatsF',
+    'patchtst': 'PatchTST',
+    'patchtst_iceemdan': 'PT-ICEEMDAN',
+    'equal_weight': '1/N',
+    'spy_buyhold': 'SPY B&H',
+}
+
+
+def compute_period_metrics(entry):
+    """Метрики gross/net по периодам full/validation/holdout для одной стратегии."""
+    period_metrics = {}
+    gross_split = split_by_date(entry['returns'], VALIDATION_END)
+    net_split = split_by_date(entry['returns_net'], VALIDATION_END)
+    turnover_split = split_by_date(entry['turnover'], VALIDATION_END)
+    for period in PERIODS:
+        period_metrics[period] = {
+            'gross': calculate_metrics(gross_split[period], rf=RF),
+            'net': calculate_metrics(net_split[period], rf=RF),
+            'avg_turnover': float(turnover_split[period].mean()) if len(turnover_split[period]) else np.nan,
+        }
+    return period_metrics
+
+
+def _cleanup_pools():
+    """Закрыть пулы воркеров PatchTST-стратегий (страховка при ошибке:
+    иначе 8 простаивающих процессов держат память, пока считается следующая)."""
+    for mod_name in ('backtesting.backtest_patchtst', 'backtesting.backtest_patchtst_iceemdan'):
+        mod = sys.modules.get(mod_name)
+        if mod is not None and hasattr(mod, 'close_pool'):
+            try:
+                mod.close_pool()
+            except Exception:
+                pass
+
+
+class _Tee:
+    """Дублирует поток вывода в лог-файл (line-buffered, чтобы во время
+    долгих прогонов промежуточные результаты были видны через tail -f)."""
+
+    def __init__(self, stream, file_handle):
+        self.stream = stream
+        self.file = file_handle
+
+    def write(self, data):
+        self.stream.write(data)
+        self.file.write(data)
+        self.file.flush()
+
+    def flush(self):
+        self.stream.flush()
+        self.file.flush()
+
+
+def load_benchmark_returns(data_dir):
+    """Дневные лог-доходности бенчмарка (SPY): из кэша или скачать."""
+    bench_path = data_dir / "benchmark_log_returns.csv"
+    if not bench_path.exists():
+        try:
+            from data.downloader import download_benchmark
+            download_benchmark()
+        except Exception as e:
+            warnings.warn(
+                f"Бенчмарк недоступен ({e}). Buy & Hold пропущен. "
+                f"Скачать вручную: python -c \"import sys; sys.path.insert(0,'src'); "
+                f"from data.downloader import download_benchmark; download_benchmark()\""
+            )
+            return None
+    bench = pd.read_csv(bench_path, index_col=0, parse_dates=True)
+    return bench.iloc[:, 0]
 
 
 # ============================================================
@@ -183,12 +241,13 @@ def main():
         print("  1 - Baseline 1 (Историческое среднее)")
         print("  2 - StatsForecast AutoARIMA")
         print("  3 - PatchTST")
+        print("  4 - PatchTST + ICEEMDAN")
         while True:
             ans = input("Введите номера через запятую (Enter = все): ").strip()
             if ans == "":
-                return {"baseline1", "baseline2", "patchtst"}
+                return {"baseline1", "baseline2", "patchtst", "patchtst_iceemdan"}
             parts = [p.strip() for p in ans.replace(" ", "").split(",") if p.strip()]
-            mapping = {"1": "baseline1", "2": "baseline2", "3": "patchtst"}
+            mapping = {"1": "baseline1", "2": "baseline2", "3": "patchtst", "4": "patchtst_iceemdan"}
             selected = {mapping[p] for p in parts if p in mapping}
             if selected:
                 return selected
@@ -199,13 +258,24 @@ def main():
     results_dir.mkdir(exist_ok=True)
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
 
+    # Весь вывод (прогресс бэктестов, метрики, warnings) дублируется в лог,
+    # чтобы промежуточные результаты были видны во время прогона:
+    #   tail -f results/run_log_{timestamp}.txt
+    log_path = results_dir / f"run_log_{timestamp}.txt"
+    log_file = open(log_path, 'a', encoding='utf-8')
+    log_file.write(f"=== Прогон {timestamp}, запущен {datetime.now():%Y-%m-%d %H:%M:%S} ===\n")
+    sys.stdout = _Tee(sys.stdout, log_file)
+    sys.stderr = _Tee(sys.stderr, log_file)
+    print(f"Лог прогона: {log_path}")
+
     print("Параметры берутся из config/config.yaml")
     if prompt_yes_no("Скачать данные заново?", default=False):
         from data.downloader import download_and_prepare_data
         download_and_prepare_data()
 
     # Загружаем данные
-    data_path = Path(__file__).parent / "data" / "raw" / "log_returns.csv"
+    data_dir = Path(__file__).parent / "data" / "raw"
+    data_path = data_dir / "log_returns.csv"
     if not data_path.exists():
         print("Ошибка: данные не найдены!")
         print(f"Ожидается файл: {data_path}")
@@ -214,6 +284,9 @@ def main():
         return
 
     returns = pd.read_csv(data_path, index_col=0, parse_dates=True)
+    if DATA_END:
+        returns = returns.loc[:DATA_END]
+        print(f"Данные обрезаны по backtest.data_end = {DATA_END}")
 
     selected_models = prompt_models()
 
@@ -224,6 +297,8 @@ def main():
     print(f"Акций: {len(returns.columns)}")
     print(f"Train: {TRAIN_WINDOW} дней, Test: {TEST_WINDOW} дней")
     print(f"PatchTST режим: {patchtst_mode.upper()}")
+    print(f"Издержки: {COST_RATE:.4%} на единицу оборота")
+    print(f"Validation/holdout граница: {VALIDATION_END}")
     print()
 
     results = {}
@@ -231,93 +306,138 @@ def main():
     total_steps = len(selected_models)
     step_num = 0
 
-    # Baseline 1
-    if "baseline1" in selected_models:
+    for key, label, prefix, runner in STRATEGY_SPECS:
+        if key not in selected_models:
+            continue
         step_num += 1
-        print(f"[{step_num}/{total_steps}] Baseline 1: Историческое среднее...")
-        baseline1_result = run_baseline1(
-            returns,
-            save_weights_path=results_dir / f"baseline1_weights_{timestamp}.csv",
-            collect_forecasts=True
-        )
-        baseline1_returns, baseline1_forecasts = baseline1_result
-        forecast_metrics = aggregate_forecast_metrics(baseline1_forecasts)
-        results['baseline1'] = {
-            'returns': baseline1_returns,
-            'metrics': calculate_metrics(baseline1_returns, rf=RF),
+        print(f"[{step_num}/{total_steps}] {label}...")
+
+        weights_path = results_dir / f"{prefix}_weights_{timestamp}.csv"
+        try:
+            strategy_returns, forecasts = runner(
+                returns,
+                save_weights_path=weights_path,
+                collect_forecasts=True
+            )
+        except Exception as e:
+            warnings.warn(f"{label} пропущена из-за ошибки: {e}")
+            print(f"      ОШИБКА: {e}\n")
+            continue
+        finally:
+            _cleanup_pools()
+        forecast_metrics = aggregate_forecast_metrics(forecasts)
+
+        weights_df = pd.read_csv(weights_path, index_col=0, parse_dates=True)
+        turnover = compute_turnover_series(weights_df, returns)
+        returns_net = apply_transaction_costs(strategy_returns, turnover, COST_RATE)
+
+        results[key] = {
+            'label': label,
+            'prefix': prefix,
+            'returns': strategy_returns,
+            'returns_net': returns_net,
+            'turnover': turnover,
             'forecast_metrics': forecast_metrics,
-            'forecasts': baseline1_forecasts
+            'forecasts': forecasts,
+            'is_benchmark': False,
         }
-        print(f"      Sharpe: {results['baseline1']['metrics']['Sharpe Ratio']:.2f}")
-        print(f"      RMSE: {forecast_metrics['rmse']:.6f}, MAE: {forecast_metrics['mae']:.6f}, Hit Rate: {forecast_metrics['hit_rate']:.2%}")
+        # Сохраняем сразу: падение следующей стратегии не должно терять
+        # результаты уже досчитанных (PatchTST full — это часы)
+        strategy_returns.to_csv(results_dir / f"{prefix}_returns_{timestamp}.csv")
+        returns_net.to_csv(results_dir / f"{prefix}_returns_net_{timestamp}.csv")
+        forecasts.to_csv(results_dir / f"{prefix}_forecasts_{timestamp}.csv", index=False)
+
+        full_metrics = calculate_metrics(strategy_returns, rf=RF)
+        net_metrics = calculate_metrics(returns_net, rf=RF)
+        print(f"      Sharpe: {full_metrics['Sharpe Ratio']:.2f} (net: {net_metrics['Sharpe Ratio']:.2f}), "
+              f"оборот: {turnover.mean():.1%}/мес")
+        print(f"      RMSE: {forecast_metrics['rmse']:.6f}, MAE: {forecast_metrics['mae']:.6f}, "
+              f"Hit Rate: {forecast_metrics['hit_rate']:.2%}")
         print()
 
-    # Baseline 2
-    if "baseline2" in selected_models:
-        step_num += 1
-        print(f"[{step_num}/{total_steps}] Baseline 2: StatsForecast AutoARIMA...")
-        baseline2_result = run_baseline2(
-            returns,
-            save_weights_path=results_dir / f"statsforecast_weights_{timestamp}.csv",
-            collect_forecasts=True
-        )
-        baseline2_returns, baseline2_forecasts = baseline2_result
-        forecast_metrics = aggregate_forecast_metrics(baseline2_forecasts)
-        results['baseline2'] = {
-            'returns': baseline2_returns,
-            'metrics': calculate_metrics(baseline2_returns, rf=RF),
-            'forecast_metrics': forecast_metrics,
-            'forecasts': baseline2_forecasts
+    # ------------------------------------------------------------
+    # Бенчмарки (считаются всегда — дёшево)
+    # ------------------------------------------------------------
+    print("Бенчмарки...")
+
+    try:
+        ew_returns, ew_weights = run_equal_weight(returns, TRAIN_WINDOW, TEST_WINDOW)
+        ew_weights.to_csv(results_dir / f"equal_weight_weights_{timestamp}.csv")
+        ew_turnover = compute_turnover_series(ew_weights, returns)
+        results['equal_weight'] = {
+            'label': 'Equal Weight (1/N)',
+            'prefix': 'equal_weight',
+            'returns': ew_returns,
+            'returns_net': apply_transaction_costs(ew_returns, ew_turnover, COST_RATE),
+            'turnover': ew_turnover,
+            'forecast_metrics': None,
+            'forecasts': None,
+            'is_benchmark': True,
         }
-        print(f"      Sharpe: {results['baseline2']['metrics']['Sharpe Ratio']:.2f}")
-        print(f"      RMSE: {forecast_metrics['rmse']:.6f}, MAE: {forecast_metrics['mae']:.6f}, Hit Rate: {forecast_metrics['hit_rate']:.2%}")
-        print()
+        print(f"      1/N Sharpe: {calculate_metrics(ew_returns, rf=RF)['Sharpe Ratio']:.2f}, "
+              f"оборот: {ew_turnover.mean():.1%}/мес")
+    except Exception as e:
+        warnings.warn(f"Бенчмарк 1/N пропущен из-за ошибки: {e}")
 
-    # PatchTST
-    if "patchtst" in selected_models:
-        step_num += 1
-        print(f"[{step_num}/{total_steps}] PatchTST Self-Supervised ({patchtst_mode})...")
-        patchtst_result = run_patchtst(
-            returns,
-            save_weights_path=results_dir / f"patchtst_weights_{timestamp}.csv",
-            collect_forecasts=True
-        )
-        patchtst_returns, patchtst_forecasts = patchtst_result
-        forecast_metrics = aggregate_forecast_metrics(patchtst_forecasts)
-        results['patchtst'] = {
-            'returns': patchtst_returns,
-            'metrics': calculate_metrics(patchtst_returns, rf=RF),
-            'forecast_metrics': forecast_metrics,
-            'forecasts': patchtst_forecasts
-        }
-        print(f"      Sharpe: {results['patchtst']['metrics']['Sharpe Ratio']:.2f}")
-        print(f"      RMSE: {forecast_metrics['rmse']:.6f}, MAE: {forecast_metrics['mae']:.6f}, Hit Rate: {forecast_metrics['hit_rate']:.2%}")
-        print()
+    try:
+        benchmark_returns = load_benchmark_returns(data_dir)
+        if benchmark_returns is not None:
+            if DATA_END:
+                benchmark_returns = benchmark_returns.loc[:DATA_END]
+            spy_returns = run_buy_and_hold(benchmark_returns, returns, TRAIN_WINDOW, TEST_WINDOW)
+            spy_turnover = pd.Series(0.0, index=spy_returns.index)  # Buy & Hold не торгует
+            results['spy_buyhold'] = {
+                'label': 'Buy & Hold (SPY)',
+                'prefix': 'spy_buyhold',
+                'returns': spy_returns,
+                'returns_net': spy_returns.copy(),
+                'turnover': spy_turnover,
+                'forecast_metrics': None,
+                'forecasts': None,
+                'is_benchmark': True,
+            }
+            print(f"      SPY B&H Sharpe: {calculate_metrics(spy_returns, rf=RF)['Sharpe Ratio']:.2f}")
+    except Exception as e:
+        warnings.warn(f"Бенчмарк SPY пропущен из-за ошибки: {e}")
+    print()
 
-    # CSV с доходностями и прогнозами
-    if "baseline1" in results:
-        results["baseline1"]["returns"].to_csv(results_dir / f"baseline1_returns_{timestamp}.csv")
-        results["baseline1"]["forecasts"].to_csv(results_dir / f"baseline1_forecasts_{timestamp}.csv", index=False)
-    if "baseline2" in results:
-        results["baseline2"]["returns"].to_csv(results_dir / f"statsforecast_returns_{timestamp}.csv")
-        results["baseline2"]["forecasts"].to_csv(results_dir / f"statsforecast_forecasts_{timestamp}.csv", index=False)
-    if "patchtst" in results:
-        results["patchtst"]["returns"].to_csv(results_dir / f"patchtst_returns_{timestamp}.csv")
-        results["patchtst"]["forecasts"].to_csv(results_dir / f"patchtst_forecasts_{timestamp}.csv", index=False)
+    if not results:
+        print("Ни одна стратегия не досчиталась — нечего сохранять.")
+        return
 
-    # Сводная таблица (портфельные метрики + метрики прогнозов)
-    comparison_data = {}
-    if "baseline1" in results:
-        merged = {**results['baseline1']['metrics'], **{f'Forecast_{k}': v for k, v in results['baseline1']['forecast_metrics'].items()}}
-        comparison_data['Baseline 1 (Hist Mean)'] = merged
-    if "baseline2" in results:
-        merged = {**results['baseline2']['metrics'], **{f'Forecast_{k}': v for k, v in results['baseline2']['forecast_metrics'].items()}}
-        comparison_data['Baseline 2 (StatsForecast)'] = merged
-    if "patchtst" in results:
-        merged = {**results['patchtst']['metrics'], **{f'Forecast_{k}': v for k, v in results['patchtst']['forecast_metrics'].items()}}
-        comparison_data['PatchTST'] = merged
-    comparison = pd.DataFrame(comparison_data).T
-    comparison.to_csv(results_dir / f"comparison_{timestamp}.csv")
+    # Доходности бенчмарков
+    for key in ('equal_weight', 'spy_buyhold'):
+        if key in results:
+            entry = results[key]
+            entry['returns'].to_csv(results_dir / f"{entry['prefix']}_returns_{timestamp}.csv")
+            entry['returns_net'].to_csv(results_dir / f"{entry['prefix']}_returns_net_{timestamp}.csv")
+
+    # ------------------------------------------------------------
+    # Метрики по периодам и сводные таблицы
+    # ------------------------------------------------------------
+    for key, entry in results.items():
+        entry['period_metrics'] = compute_period_metrics(entry)
+
+    validation_ts = pd.Timestamp(VALIDATION_END)
+    for period in PERIODS:
+        comparison_data = {}
+        for key, entry in results.items():
+            pm = entry['period_metrics'][period]
+            merged = dict(pm['gross'])
+            merged.update({f"{k} (net)": v for k, v in pm['net'].items() if k != 'Num Periods'})
+            merged['Avg Turnover'] = pm['avg_turnover']
+            if entry['forecasts'] is not None:
+                # Метрики прогнозов — по записям того же периода, что и метрики портфеля
+                fdf = entry['forecasts']
+                if period == 'validation':
+                    fdf = fdf[fdf['date'] <= validation_ts]
+                elif period == 'holdout':
+                    fdf = fdf[fdf['date'] > validation_ts]
+                fm = aggregate_forecast_metrics(fdf)
+                merged.update({f"Forecast_{k}": v for k, v in fm.items()})
+            comparison_data[entry['label']] = merged
+        comparison = pd.DataFrame(comparison_data).T
+        comparison.to_csv(results_dir / f"comparison_{period}_{timestamp}.csv")
 
     # JSON с метриками
     metrics_json = {
@@ -325,69 +445,84 @@ def main():
         'config': {
             'train_window': TRAIN_WINDOW,
             'test_window': TEST_WINDOW,
+            'data_end': DATA_END,
             'risk_free_rate': RF,
-            'patchtst_mode': patchtst_mode
+            'patchtst_mode': patchtst_mode,
+            'padding_patch': config['models']['patchtst'].get('padding_patch', True),
+            'cost_rate': COST_RATE,
+            'validation_end': VALIDATION_END,
+            'iceemdan': config['models'].get('iceemdan', {}),
         },
         'metrics': {},
         'forecast_metrics': {}
     }
-    if "baseline1" in results:
-        metrics_json['metrics']['baseline1'] = results['baseline1']['metrics']
-        metrics_json['forecast_metrics']['baseline1'] = results['baseline1']['forecast_metrics']
-    if "baseline2" in results:
-        metrics_json['metrics']['baseline2'] = results['baseline2']['metrics']
-        metrics_json['forecast_metrics']['baseline2'] = results['baseline2']['forecast_metrics']
-    if "patchtst" in results:
-        metrics_json['metrics']['patchtst'] = results['patchtst']['metrics']
-        metrics_json['forecast_metrics']['patchtst'] = results['patchtst']['forecast_metrics']
+    for key, entry in results.items():
+        metrics_json['metrics'][key] = entry['period_metrics']
+        if entry['forecast_metrics'] is not None:
+            metrics_json['forecast_metrics'][key] = entry['forecast_metrics']
     with open(results_dir / f"metrics_{timestamp}.json", 'w') as f:
         json.dump(metrics_json, f, indent=2, default=str)
 
+    # ------------------------------------------------------------
     # Вывод результатов
-    print("=" * 60)
-    print("РЕЗУЛЬТАТЫ: ПОРТФЕЛЬНЫЕ МЕТРИКИ")
-    print("=" * 60)
-    labels = []
-    if "baseline1" in results:
-        labels.append(("baseline1", "Baseline 1"))
-    if "baseline2" in results:
-        labels.append(("baseline2", "StatsF"))
-    if "patchtst" in results:
-        labels.append(("patchtst", "PatchTST"))
+    # ------------------------------------------------------------
+    ordered_keys = [s[0] for s in STRATEGY_SPECS if s[0] in results]
+    ordered_keys += [k for k in ('equal_weight', 'spy_buyhold') if k in results]
+    labels = [(k, SHORT_LABELS[k]) for k in ordered_keys]
 
-    header = f"\n{'Метрика':<25}" + "".join([f"{label:>12}" for _, label in labels])
+    for variant, title in [('gross', 'БЕЗ ИЗДЕРЖЕК (GROSS)'), ('net', f'С ИЗДЕРЖКАМИ {COST_RATE:.2%} (NET)')]:
+        print("=" * 60)
+        print(f"ПОРТФЕЛЬНЫЕ МЕТРИКИ, ПОЛНЫЙ ПЕРИОД: {title}")
+        print("=" * 60)
+        header = f"\n{'Метрика':<25}" + "".join([f"{label:>13}" for _, label in labels])
+        print(header)
+        print("-" * (25 + 13 * len(labels)))
+        for metric in ['Annual Return', 'Annual Volatility', 'Sharpe Ratio', 'Calmar Ratio', 'Max Drawdown', 'Total Return']:
+            row = f"{metric:<25}"
+            for key, _ in labels:
+                value = results[key]['period_metrics']['full'][variant][metric]
+                row += f"{value:>13.2f}" if 'Ratio' in metric else f"{value:>13.2%}"
+            print(row)
+        row = f"{'Avg Turnover/мес':<25}"
+        for key, _ in labels:
+            row += f"{results[key]['period_metrics']['full']['avg_turnover']:>13.2%}"
+        print(row)
+        print()
+
+    # Holdout-период (главная таблица для выводов)
+    print("=" * 60)
+    print(f"SHARPE ПО ПЕРИОДАМ (net): validation <= {VALIDATION_END} < holdout")
+    print("=" * 60)
+    header = f"\n{'Период':<25}" + "".join([f"{label:>13}" for _, label in labels])
     print(header)
-    print("-" * (25 + 12 * len(labels)))
-    for metric in ['Annual Return', 'Annual Volatility', 'Sharpe Ratio', 'Calmar Ratio', 'Max Drawdown', 'Total Return']:
-        if 'Ratio' in metric:
-            row = f"{metric:<25}" + "".join(
-                [f"{results[key]['metrics'][metric]:>12.2f}" for key, _ in labels]
-            )
-        else:
-            row = f"{metric:<25}" + "".join(
-                [f"{results[key]['metrics'][metric]:>12.2%}" for key, _ in labels]
-            )
+    print("-" * (25 + 13 * len(labels)))
+    for period in PERIODS:
+        row = f"{period:<25}"
+        for key, _ in labels:
+            row += f"{results[key]['period_metrics'][period]['net']['Sharpe Ratio']:>13.2f}"
         print(row)
 
-    # Вывод метрик прогнозов
-    print()
-    print("=" * 60)
-    print("РЕЗУЛЬТАТЫ: МЕТРИКИ ПРОГНОЗОВ")
-    print("=" * 60)
-    header = f"\n{'Метрика':<25}" + "".join([f"{label:>12}" for _, label in labels])
-    print(header)
-    print("-" * (25 + 12 * len(labels)))
-    for metric, fmt in [('rmse', '.6f'), ('mae', '.6f'), ('hit_rate', '.2%')]:
-        row = f"{metric.upper():<25}" + "".join(
-            [f"{results[key]['forecast_metrics'][metric]:>12{fmt}}" for key, _ in labels]
-        )
-        print(row)
+    # Вывод метрик прогнозов (только стратегии)
+    forecast_labels = [(k, l) for k, l in labels if results[k]['forecast_metrics'] is not None]
+    if forecast_labels:
+        print()
+        print("=" * 60)
+        print("РЕЗУЛЬТАТЫ: МЕТРИКИ ПРОГНОЗОВ")
+        print("=" * 60)
+        header = f"\n{'Метрика':<25}" + "".join([f"{label:>13}" for _, label in forecast_labels])
+        print(header)
+        print("-" * (25 + 13 * len(forecast_labels)))
+        for metric, fmt in [('rmse', '.6f'), ('mae', '.6f'), ('hit_rate', '.2%')]:
+            row = f"{metric.upper():<25}" + "".join(
+                [f"{results[key]['forecast_metrics'][metric]:>13{fmt}}" for key, _ in forecast_labels]
+            )
+            print(row)
 
     print()
     print(f"Результаты сохранены в: {results_dir}/")
-    print(f"  - comparison_{timestamp}.csv")
+    print(f"  - comparison_full|validation|holdout_{timestamp}.csv")
     print(f"  - metrics_{timestamp}.json")
-    print(f"  - *_returns_{timestamp}.csv")
+    print(f"  - *_returns_{timestamp}.csv, *_returns_net_{timestamp}.csv")
     print(f"  - *_forecasts_{timestamp}.csv")
     print(f"  - *_weights_{timestamp}.csv")
 
@@ -399,15 +534,26 @@ def main():
         print("ВИЗУАЛИЗАЦИЯ РЕЗУЛЬТАТОВ")
         print("=" * 60)
 
-        # График кумулятивных доходностей
+        # График кумулятивных доходностей (net — с издержками)
         fig, ax = plt.subplots(figsize=(14, 7))
 
         for key, label in labels:
-            simple_returns = np.exp(results[key]['returns']) - 1
+            simple_returns = np.exp(results[key]['returns_net']) - 1
             cumulative = (1 + simple_returns).cumprod()
-            ax.plot(cumulative.index, cumulative.values, label=label, linewidth=2)
+            linestyle = '--' if results[key]['is_benchmark'] else '-'
+            ax.plot(cumulative.index, cumulative.values, label=label,
+                    linewidth=2, linestyle=linestyle)
 
-        ax.set_title('Сравнение кумулятивных доходностей', fontsize=14, fontweight='bold')
+        validation_ts = pd.Timestamp(VALIDATION_END)
+        date_min = min(e['returns'].index[0] for e in results.values())
+        date_max = max(e['returns'].index[-1] for e in results.values())
+        if date_min < validation_ts < date_max:
+            ax.axvline(validation_ts, color='grey', linestyle=':', linewidth=1.5)
+            ax.text(validation_ts, ax.get_ylim()[1] * 0.95, ' validation | holdout',
+                    color='grey', fontsize=9, va='top')
+
+        ax.set_title(f'Сравнение кумулятивных доходностей (издержки {COST_RATE:.2%}/оборот)',
+                     fontsize=14, fontweight='bold')
         ax.set_xlabel('Дата')
         ax.set_ylabel('Рост капитала ($1 → $X)')
         ax.legend()
@@ -422,9 +568,9 @@ def main():
         plt.show()
 
         # Итоговые значения
-        print("\nРост капитала ($1 → $X):")
+        print("\nРост капитала с издержками ($1 → $X):")
         for key, label in labels:
-            simple_returns = np.exp(results[key]['returns']) - 1
+            simple_returns = np.exp(results[key]['returns_net']) - 1
             cumulative = (1 + simple_returns).cumprod()
             print(f"  {label}: $1 → ${cumulative.iloc[-1]:.2f}")
 
@@ -433,24 +579,28 @@ def main():
     except Exception as e:
         print(f"\nОшибка при создании визуализации: {e}")
 
-    # Анализ весов (если есть baseline1 и patchtst)
-    if "baseline1" in results and "patchtst" in results:
-        analyze_weight_differences(results_dir, timestamp, results)
+    # Анализ весов: Baseline1 против каждой PatchTST-стратегии
+    for pt_key in ('patchtst', 'patchtst_iceemdan'):
+        if "baseline1" in results and pt_key in results:
+            analyze_weight_differences(results_dir, timestamp, results, pt_key)
 
 
-def analyze_weight_differences(results_dir, timestamp, results):
+def analyze_weight_differences(results_dir, timestamp, results, pt_key='patchtst'):
     """
-    Анализ различий в весах между Baseline1 и PatchTST.
-    Объясняет, почему PatchTST имеет меньшую просадку.
+    Анализ различий в весах между Baseline1 и PatchTST-стратегией.
+    Только фактические данные, без интерпретаций.
     """
+    pt_label = results[pt_key]['label']
+    pt_prefix = results[pt_key]['prefix']
+
     print("\n" + "=" * 60)
-    print("АНАЛИЗ ВЕСОВ: ПОЧЕМУ PATCHTST ИМЕЕТ МЕНЬШУЮ ПРОСАДКУ?")
+    print(f"АНАЛИЗ РАЗЛИЧИЙ ВЕСОВ: BASELINE1 vs {pt_label.upper()}")
     print("=" * 60)
 
     try:
         # Загружаем веса
         b1_weights_path = results_dir / f"baseline1_weights_{timestamp}.csv"
-        pt_weights_path = results_dir / f"patchtst_weights_{timestamp}.csv"
+        pt_weights_path = results_dir / f"{pt_prefix}_weights_{timestamp}.csv"
 
         if not b1_weights_path.exists() or not pt_weights_path.exists():
             print("Файлы весов не найдены, пропускаем анализ")
@@ -459,11 +609,11 @@ def analyze_weight_differences(results_dir, timestamp, results):
         b1_weights = pd.read_csv(b1_weights_path, index_col=0, parse_dates=True)
         pt_weights = pd.read_csv(pt_weights_path, index_col=0, parse_dates=True)
 
-        # Загружаем доходности для анализа периодов просадок
+        # Загружаем доходности для анализа худших периодов
         b1_returns = results['baseline1']['returns']
-        pt_returns = results['patchtst']['returns']
+        pt_returns = results[pt_key]['returns']
 
-        # 1. Находим топ-5 худших периодов для Baseline1
+        # 1. Топ-5 худших периодов для Baseline1
         print("\n📉 TOP-5 ХУДШИХ ПЕРИОДОВ ДЛЯ BASELINE1:")
         print("-" * 60)
 
@@ -484,8 +634,8 @@ def analyze_weight_differences(results_dir, timestamp, results):
             decreased = diff.nsmallest(3)
 
             print(f"\n{date.strftime('%Y-%m-%d')}: B1={b1_ret:.2%}, PT={pt_ret:.2%} (разница: {pt_ret-b1_ret:+.2%})")
-            print(f"  PatchTST увеличил: {', '.join([f'{t}:{v:+.1%}' for t, v in increased.items()])}")
-            print(f"  PatchTST уменьшил: {', '.join([f'{t}:{v:+.1%}' for t, v in decreased.items()])}")
+            print(f"  {pt_label} держит больше: {', '.join([f'{t}:{v:+.1%}' for t, v in increased.items()])}")
+            print(f"  {pt_label} держит меньше: {', '.join([f'{t}:{v:+.1%}' for t, v in decreased.items()])}")
 
             analysis_results.append({
                 'date': date,
@@ -497,65 +647,68 @@ def analyze_weight_differences(results_dir, timestamp, results):
             })
 
         # 2. Средние веса по активам
-        print("\n\n📊 СРЕДНИЕ РАЗЛИЧИЯ В ВЕСАХ (PatchTST - Baseline1):")
+        print("\n\n📊 СРЕДНИЕ РАЗЛИЧИЯ В ВЕСАХ (стратегия - Baseline1):")
         print("-" * 60)
 
         avg_diff = (pt_weights - b1_weights).mean()
         avg_diff_sorted = avg_diff.sort_values()
 
-        print("\nPatchTST держит МЕНЬШЕ (более консервативно):")
+        print(f"\n{pt_label} в среднем держит МЕНЬШЕ:")
         for ticker, diff in avg_diff_sorted.head(5).items():
             print(f"  {ticker}: {diff:+.1%}")
 
-        print("\nPatchTST держит БОЛЬШЕ:")
+        print(f"\n{pt_label} в среднем держит БОЛЬШЕ:")
         for ticker, diff in avg_diff_sorted.tail(5).items():
             print(f"  {ticker}: {diff:+.1%}")
 
-        # 3. Волатильность весов (как часто меняются)
-        print("\n\n📈 ВОЛАТИЛЬНОСТЬ ВЕСОВ (насколько часто меняются):")
+        # 3. Амплитуда изменений весов и оборот
+        print("\n\n📈 АМПЛИТУДА ИЗМЕНЕНИЙ ВЕСОВ И ОБОРОТ:")
         print("-" * 60)
 
         b1_weight_vol = b1_weights.diff().abs().mean().mean()
         pt_weight_vol = pt_weights.diff().abs().mean().mean()
+        b1_turnover = results['baseline1']['turnover'].mean()
+        pt_turnover = results[pt_key]['turnover'].mean()
 
-        print(f"  Baseline1 avg weight change: {b1_weight_vol:.2%}")
-        print(f"  PatchTST avg weight change:  {pt_weight_vol:.2%}")
-        print(f"  PatchTST меняет веса в {pt_weight_vol/b1_weight_vol:.2f}x чаще")
+        print(f"  Среднее |Δвес| за ребалансировку: Baseline1 {b1_weight_vol:.2%}, "
+              f"{pt_label} {pt_weight_vol:.2%} ({pt_weight_vol/b1_weight_vol:.2f}x)")
+        print(f"  Средний оборот/мес (против дрейфованных весов): "
+              f"Baseline1 {b1_turnover:.1%}, {pt_label} {pt_turnover:.1%}")
+        print(f"  (ребалансировка у всех стратегий ежемесячная; различается размер сделок)")
 
         # 4. Сохраняем анализ в файл
-        analysis_path = results_dir / f"weight_analysis_{timestamp}.txt"
+        analysis_path = results_dir / f"weight_analysis_{pt_prefix}_{timestamp}.txt"
         with open(analysis_path, 'w', encoding='utf-8') as f:
-            f.write("АНАЛИЗ ВЕСОВ: ПОЧЕМУ PATCHTST ИМЕЕТ МЕНЬШУЮ ПРОСАДКУ?\n")
+            f.write(f"АНАЛИЗ РАЗЛИЧИЙ ВЕСОВ: BASELINE1 vs {pt_label.upper()}\n")
             f.write("=" * 60 + "\n\n")
 
             f.write("1. TOP-5 ХУДШИХ ПЕРИОДОВ ДЛЯ BASELINE1\n")
             f.write("-" * 40 + "\n")
             for r in analysis_results:
                 f.write(f"\n{r['date'].strftime('%Y-%m-%d')}: B1={r['b1_return']:.2%}, PT={r['pt_return']:.2%}\n")
-                f.write(f"  Увеличил: {r['increased']}\n")
-                f.write(f"  Уменьшил: {r['decreased']}\n")
+                f.write(f"  Держит больше: {r['increased']}\n")
+                f.write(f"  Держит меньше: {r['decreased']}\n")
 
             f.write("\n\n2. СРЕДНИЕ РАЗЛИЧИЯ В ВЕСАХ\n")
             f.write("-" * 40 + "\n")
-            f.write("\nPatchTST держит МЕНЬШЕ:\n")
+            f.write(f"\n{pt_label} в среднем держит МЕНЬШЕ:\n")
             for ticker, diff in avg_diff_sorted.head(5).items():
                 f.write(f"  {ticker}: {diff:+.1%}\n")
-            f.write("\nPatchTST держит БОЛЬШЕ:\n")
+            f.write(f"\n{pt_label} в среднем держит БОЛЬШЕ:\n")
             for ticker, diff in avg_diff_sorted.tail(5).items():
                 f.write(f"  {ticker}: {diff:+.1%}\n")
 
-            f.write(f"\n\n3. ВОЛАТИЛЬНОСТЬ ВЕСОВ\n")
+            f.write("\n\n3. АМПЛИТУДА ИЗМЕНЕНИЙ ВЕСОВ И ОБОРОТ\n")
             f.write("-" * 40 + "\n")
-            f.write(f"Baseline1: {b1_weight_vol:.2%}\n")
-            f.write(f"PatchTST:  {pt_weight_vol:.2%}\n")
-            f.write(f"Ratio: {pt_weight_vol/b1_weight_vol:.2f}x\n")
-
-            f.write("\n\n4. ВЫВОДЫ\n")
-            f.write("-" * 40 + "\n")
-            f.write("PatchTST достигает меньшей просадки за счёт:\n")
-            f.write("- Снижения доли волатильных tech/growth акций\n")
-            f.write("- Увеличения доли защитных активов (utilities, consumer staples)\n")
-            f.write("- Более частой ребалансировки (быстрая реакция на рынок)\n")
+            f.write(f"Среднее |Δвес| за ребалансировку:\n")
+            f.write(f"  Baseline1: {b1_weight_vol:.2%}\n")
+            f.write(f"  {pt_label}: {pt_weight_vol:.2%} ({pt_weight_vol/b1_weight_vol:.2f}x)\n")
+            f.write(f"Средний оборот/мес (против дрейфованных весов):\n")
+            f.write(f"  Baseline1: {b1_turnover:.1%}\n")
+            f.write(f"  {pt_label}: {pt_turnover:.1%}\n")
+            f.write("\nПримечание: ребалансировка у всех стратегий строго ежемесячная,\n")
+            f.write("различается только размер изменений весов. Интерпретация различий —\n")
+            f.write("в тексте работы, на основе приведённых выше фактических данных.\n")
 
         print(f"\n✅ Анализ сохранён: {analysis_path}")
 

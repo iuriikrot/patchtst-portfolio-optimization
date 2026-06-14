@@ -1,12 +1,11 @@
-# Структура проекта patchtst-portfolio-optimization
+# Структура проекта
+
+🇬🇧 **English version:** [PROJECT_STRUCTURE_EN.md](PROJECT_STRUCTURE_EN.md)
 
 ## Быстрый старт
 
 ```bash
-# 1. Установка зависимостей
 pip install -r requirements.txt
-
-# 2. Запуск всех моделей
 python run_all.py
 ```
 
@@ -17,127 +16,97 @@ python run_all.py
 ## Дерево файлов
 
 ```
-patchtst-portfolio-optimization/
+VKR_Patch/
 ├── config/
-│   └── config.yaml                 # Конфигурация эксперимента
+│   └── config.yaml                  # Вся конфигурация эксперимента
 │
 ├── data/
-│   └── raw/                        # Сырые данные с Yahoo Finance
-│       ├── prices.csv              # Цены акций
-│       └── log_returns.csv         # Лог-доходности
+│   ├── raw/                         # Данные с Yahoo Finance
+│   │   ├── prices.csv               # Цены акций (Adj Close)
+│   │   ├── log_returns.csv          # Лог-доходности активов
+│   │   └── benchmark_log_returns.csv # Лог-доходности бенчмарка (SPY)
+│   └── cache/iceemdan/              # Кэш декомпозиций (в .gitignore)
 │
 ├── src/
-│   ├── __init__.py
-│   │
 │   ├── data/
-│   │   ├── __init__.py
-│   │   ├── downloader.py           # Загрузка данных с Yahoo Finance
-│   │   └── preprocessor.py         # Предобработка (log-returns)
+│   │   ├── downloader.py            # Загрузка данных + download_benchmark()
+│   │   └── preprocessor.py          # Предобработка (log-returns)
+│   │
+│   ├── decomposition/
+│   │   └── iceemdan.py              # CEEMDAN/ICEEMDAN + группировка IMF + кэш
 │   │
 │   ├── models/
-│   │   ├── __init__.py
-│   │   ├── patchtst.py             # PatchTST Self-Supervised модель
-│   │   └── patchtst_reference/     # Reference реализация PatchTST
-│   │       ├── PatchTST_backbone.py
-│   │       ├── PatchTST_layers.py
-│   │       └── patchTST_selfsupervised.py
+│   │   ├── patchtst.py              # PatchTST: одноканальный + многоканальный (для ICEEMDAN)
+│   │   └── patchtst_reference/      # Reference-реализация (yuqinie98/PatchTST)
 │   │
 │   ├── optimization/
-│   │   ├── __init__.py
-│   │   ├── markowitz.py            # Оптимизатор Марковица (max Sharpe)
-│   │   └── covariance.py           # Оценка ковариации (sample / Ledoit-Wolf)
+│   │   ├── markowitz.py             # Оптимизатор Марковица (max Sharpe, SLSQP)
+│   │   └── covariance.py            # Ковариация (sample / Ledoit-Wolf)
 │   │
 │   ├── utils/
-│   │   ├── __init__.py
-│   │   └── forecast_metrics.py     # Метрики прогнозов (MAE, RMSE, DA)
+│   │   ├── forecast_metrics.py      # Метрики прогнозов (RMSE, MAE, hit-rate)
+│   │   └── portfolio_metrics.py     # Метрики портфеля, turnover, издержки, сплит по датам
 │   │
 │   └── backtesting/
-│       ├── __init__.py
-│       ├── backtest.py             # Baseline 1: историческое среднее
-│       ├── backtest_statsforecast.py  # Baseline 2: StatsForecast AutoARIMA
-│       └── backtest_patchtst.py    # PatchTST Self-Supervised
+│       ├── backtest.py              # Baseline 1: историческое среднее
+│       ├── backtest_statsforecast.py # Baseline 2: AutoARIMA
+│       ├── backtest_patchtst.py     # PatchTST (сырой ряд)
+│       ├── backtest_patchtst_iceemdan.py # PatchTST + ICEEMDAN
+│       └── benchmarks.py            # Equal Weight (1/N) и Buy & Hold (SPY)
+│
+├── scripts/
+│   └── precompute_decompositions.py # Параллельный предрасчёт ICEEMDAN (CPU)
 │
 ├── notebooks/
-│   └── portfolio_comparison.py     # Standalone скрипт (все три метода)
+│   ├── colab_run.ipynb              # Запуск на GPU в Google Colab
+│   └── portfolio_comparison.py      # Standalone-скрипт (устаревшая автономная копия)
 │
-├── results/                        # Результаты бэктестов
+├── results/                         # Результаты бэктестов + run_log_*.txt
 │
-├── .gitignore
-├── LICENSE                         # MIT лицензия
-├── README.md                       # Описание проекта
-├── RESULTS.md                      # Результаты исследования
-├── PROJECT_STRUCTURE.md            # Этот файл
-├── requirements.txt                # Зависимости Python
-└── run_all.py                      # Запуск всех моделей + сохранение в results/
+├── README.md / README_EN.md         # Описание проекта (RU / EN)
+├── RESULTS.md / RESULTS_EN.md       # Результаты исследования (RU / EN)
+├── PROJECT_STRUCTURE.md / _EN.md    # Этот файл (RU / EN)
+├── requirements.txt                 # Зависимости Python
+├── LICENSE                          # MIT
+└── run_all.py                       # Оркестратор: стратегии + бенчмарки + издержки
 ```
 
 ---
 
-## Три подхода к оценке μ
+## Сравниваемые стратегии
 
-Все три метода используют **одинаковые параметры бэктеста** (из `config/config.yaml`):
-- **TRAIN_WINDOW = 1260 дней** (5 лет)
-- **TEST_WINDOW = 21 день** (1 месяц)
-- **RF = 0.04** (безрисковая ставка)
+Все используют **одинаковые** окна, ковариацию (Ledoit-Wolf), ограничения и оптимизатор; отличается только оценка μ.
 
-| Подход | Оценка μ | Вход | Файл |
-|--------|----------|------|------|
-| **Baseline 1** | mean(r) × 252 | 1260 дней | `backtest.py` |
-| **Baseline 2** | AutoARIMA(21).mean × 252 | 1260 дней | `backtest_statsforecast.py` |
-| **PatchTST** | forecast(21).mean × 252 | 1260 дней | `backtest_patchtst.py` |
+| Стратегия | Оценка μ | Файл |
+|---|---|---|
+| Baseline 1 | mean(r) × 252 | `backtest.py` |
+| Baseline 2 | AutoARIMA(21).mean × 252 | `backtest_statsforecast.py` |
+| PatchTST | forecast(21).mean × 252 (сырой ряд) | `backtest_patchtst.py` |
+| PatchTST + ICEEMDAN | forecast(21).mean × 252 (по компонентам) | `backtest_patchtst_iceemdan.py` |
+| Equal Weight (1/N) | — | `benchmarks.py` |
+| Buy & Hold (SPY) | — | `benchmarks.py` |
 
 ---
 
-## PatchTST Self-Supervised
-
-**Источник:** https://github.com/yuqinie98/PatchTST
-
-### Архитектура
+## Пайплайн PatchTST + ICEEMDAN
 
 ```
-Вход: 252 дня (1 год)
-    ↓
-Patching: 30 патчей (patch=16, stride=8)
-    ↓
-Embedding: Linear(16 → 128)
-    ↓
-Positional Encoding
-    ↓
-Transformer Encoder (3 слоя, 16 голов)
-    ↓
-Prediction Head → 21 день
-    ↓
-μ = mean(forecast) × 252
+Train-окно актива (1260 дней лог-доходностей)
+        │
+        ▼  каузальная декомпозиция (только train)
+CEEMDAN/ICEEMDAN → K переменных IMF + остаток
+        │
+        ▼  детерминированная группировка по среднему периоду
+3 канала: noise (<5д) | cycle (5–63д) | trend (>63д + остаток)
+        │
+        ▼  многоканальный PatchTST (channel-independence, общие веса)
+прогноз 3 каналов на 21 день  →  сумма каналов
+        │
+        ▼
+μ = mean(сумма прогноза) × 252  →  оптимизация Марковица
 ```
 
-### Self-Supervised Pre-training
-
-```
-1. Маскируем 15% патчей случайно
-2. Модель учится восстанавливать замаскированные патчи
-3. Loss = MSE(predicted_patches, real_patches)
-```
-
-### Параметры модели (full mode)
-
-```yaml
-patchtst:
-  input_length: 252         # 1 год
-  pred_length: 21           # 1 месяц
-  patch_length: 16
-  stride: 8
-  d_model: 128
-  n_heads: 16
-  n_layers: 3
-  d_ff: 512
-  dropout: 0.1
-  use_revin: true
-  mask_ratio: 0.15          # Для self-supervised pretraining
-  pretrain_epochs: 20
-  finetune_epochs: 10
-  pretrain_lr: 0.005
-  batch_size: 64
-```
+Декомпозиции кэшируются на диск (`data/cache/iceemdan/`). Ключ кэша — хэш значений окна и параметров, поэтому при смене данных/параметров кэш инвалидируется автоматически и утечка из будущего невозможна.
 
 ---
 
@@ -145,126 +114,89 @@ patchtst:
 
 ```
 max (w'μ - rf) / √(w'Σw)
-s.t. Σw = 1, w ≥ 0
+s.t. Σw = 1,  min_w ≤ w ≤ max_w  (long-only, fully invested)
 ```
 
-- **μ** — вектор ожидаемых доходностей (различается по методам)
-- **Σ** — ковариационная матрица (одинаковая для всех методов)
-- **Ограничения:** long-only, fully invested
+- **μ** — ожидаемые доходности (различаются по методам);
+- **Σ** — ковариация Ledoit-Wolf (одинакова для всех);
+- солвер — `scipy.optimize.minimize` (SLSQP).
 
 ---
 
-## Метрики для сравнения
+## Метрики
 
-| Метрика | Описание | Формула |
-|---------|----------|---------|
-| **Sharpe Ratio** | Доходность на единицу риска | (R - Rf) / σ |
-| **Annual Return** | Годовая доходность | mean(r) × 12 |
-| **Annual Volatility** | Годовая волатильность | std(r) × √12 |
-| **Max Drawdown** | Максимальная просадка | max(peak - trough) |
-| **Total Return** | Общая доходность | exp(Σr) - 1 |
+**Портфельные** (`src/utils/portfolio_metrics.py`), на месячных простых доходностях с аннуализацией ×12 / √12:
+
+| Метрика | Формула |
+|---|---|
+| Annual Return (CAGR) | ∏(1+r)^(12/N) − 1 |
+| Annual Volatility | std(r) × √12 |
+| Sharpe Ratio | (mean(r) − rf_мес) / std(r) × √12 |
+| Max Drawdown | min по кумулятивной кривой |
+| Calmar Ratio | CAGR / |MaxDD| |
+| Turnover | Σ|w_t − w_дрейф| против дрейфованных весов |
+
+Метрики приводятся без издержек (gross) и с издержками (net): `net = (exp(r) − 1) − cost_rate × turnover`.
+
+**Прогнозов** (`src/utils/forecast_metrics.py`): RMSE, MAE, Hit Rate на месячных суммах.
 
 ---
 
-## Пайплайн эксперимента
+## Конфигурация (`config/config.yaml`)
 
-```
-┌─────────────────────────────────────────────────────────────────┐
-│                         ДАННЫЕ                                   │
-│  Yahoo Finance → Adj Close → Log Returns                         │
-│  20 акций S&P 500 из 10 секторов, 2010-2025                      │
-└─────────────────────────────────────────────────────────────────┘
-                              │
-                              ▼
-┌─────────────────────────────────────────────────────────────────┐
-│                СКОЛЬЗЯЩЕЕ ОКНО (одинаковое для всех)            │
-│                                                                  │
-│  Train: 1260 дней (5 лет) → Test: 21 день (1 месяц)             │
-│  Сдвиг: 21 день                                                  │
-└─────────────────────────────────────────────────────────────────┘
-                              │
-                              ▼
-┌─────────────────────────────────────────────────────────────────┐
-│                    ПРОГНОЗ μ (ожидаемые доходности)             │
-│                                                                  │
-│  ┌──────────────┐  ┌──────────────┐  ┌──────────────┐          │
-│  │  Baseline 1  │  │  Baseline 2  │  │   PatchTST   │          │
-│  │  Historical  │  │    ARIMA     │  │Self-Supervised│          │
-│  │    Mean      │  │              │  │              │          │
-│  │  (1260 дней) │  │  (1260 дней) │  │  (1260 дней) │          │
-│  └──────────────┘  └──────────────┘  └──────────────┘          │
-└─────────────────────────────────────────────────────────────────┘
-                              │
-                              ▼
-┌─────────────────────────────────────────────────────────────────┐
-│                    ОПТИМИЗАЦИЯ МАРКОВИЦА                        │
-│                                                                  │
-│  max (w'μ - rf) / √(w'Σw)                                       │
-│  s.t. Σw = 1, w ≥ 0                                             │
-│                                                                  │
-│  Σ — ковариационная матрица (одинаковая для всех подходов)     │
-└─────────────────────────────────────────────────────────────────┘
-                              │
-                              ▼
-┌─────────────────────────────────────────────────────────────────┐
-│                    СРАВНЕНИЕ РЕЗУЛЬТАТОВ                        │
-│                                                                  │
-│  Sharpe, MaxDD, Annual Return, Annual Volatility, Total Return  │
-└─────────────────────────────────────────────────────────────────┘
-```
+| Блок | Ключевые параметры |
+|---|---|
+| `data` | `tickers`, `start_date`, `end_date`, `benchmark_ticker` |
+| `backtest` | `train_window`, `test_window`, `data_end` (обрезка для тюнинга) |
+| `models.patchtst` | `mode` (fast/full), `padding_patch`, `n_workers`, гиперпараметры режима |
+| `models.iceemdan` | `trials`, `epsilon`, `seed`, `grouping`, `forecast_noise`, `cache` |
+| `optimization` | `risk_free_rate`, `covariance`, `constraints` (веса, long-only) |
+| `evaluation` | `transaction_costs.cost_rate`, `split.validation_end` |
+
+### Как изменить набор акций
+
+1. Отредактируйте `data.tickers` в `config/config.yaml`.
+2. Перекачайте данные: `python src/data/downloader.py` (или ответьте `y` в `run_all.py`).
+3. Кэш декомпозиций чистить не нужно — он привязан к значениям данных.
 
 ---
 
 ## Запуск
 
-### Все модели сразу (рекомендуется):
-
 ```bash
-# Запуск всех трёх моделей + сохранение результатов в results/
+# Все стратегии + бенчмарки (Enter = все)
 python run_all.py
+
+# Фоновый прогон (macOS, не уснёт, переживёт закрытие терминала)
+nohup caffeinate -is bash -c 'printf "n\n\n" | python3 run_all.py' > run.log 2>&1 &
+tail -f results/run_log_*.txt
+
+# Отдельные стратегии
+python src/backtesting/backtest.py                    # Baseline 1
+python src/backtesting/backtest_statsforecast.py      # AutoARIMA
+python src/backtesting/backtest_patchtst.py           # PatchTST
+python src/backtesting/backtest_patchtst_iceemdan.py  # PatchTST + ICEEMDAN
+
+# Предрасчёт декомпозиций (ускоряет ICEEMDAN-прогон)
+python scripts/precompute_decompositions.py --all
 ```
 
-Результаты сохраняются в `results/`:
-- `comparison_YYYYMMDD_HHMMSS.csv` — сводная таблица метрик
-- `metrics_YYYYMMDD_HHMMSS.json` — метрики в JSON
-- `*_returns_YYYYMMDD_HHMMSS.csv` — доходности каждой модели
+### Выходные файлы (в `results/`, с меткой времени)
 
-### Отдельные бэктесты:
-
-```bash
-# Baseline 1: Историческое среднее
-python src/backtesting/backtest.py
-
-# Baseline 2: StatsForecast AutoARIMA
-python src/backtesting/backtest_statsforecast.py
-
-# PatchTST Self-Supervised
-python src/backtesting/backtest_patchtst.py
-```
+- `comparison_full|validation|holdout_<ts>.csv` — сводные таблицы по периодам;
+- `metrics_<ts>.json` — метрики (gross/net по периодам) + параметры прогона;
+- `<strategy>_returns[_net]_<ts>.csv`, `<strategy>_weights_<ts>.csv`, `<strategy>_forecasts_<ts>.csv`;
+- `cumulative_returns_<ts>.png` — график; `weight_analysis_*_<ts>.txt` — анализ весов; `run_log_<ts>.txt` — полный лог.
 
 ---
 
-## Зависимости (requirements.txt)
+## Зависимости (`requirements.txt`)
 
 ```
-# Data
-yfinance, pandas, numpy
-
-# ML/DL
-torch, pytorch-lightning
-
-# Time Series
-statsforecast (AutoARIMA)
-
-# Optimization
-scipy, cvxpy
-
-# Visualization
-matplotlib, seaborn, plotly
-
-# Utils
-pyyaml, tqdm, scikit-learn
-
-# Testing
-pytest
+Data:          yfinance, pandas, numpy
+ML/DL:         torch
+Time Series:   statsforecast (AutoARIMA), EMD-signal (CEEMDAN/ICEEMDAN)
+Optimization:  scipy
+Visualization: matplotlib, seaborn
+Utils:         pyyaml, tqdm, scikit-learn
 ```

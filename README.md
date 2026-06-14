@@ -1,11 +1,11 @@
-# PatchTST для портфельной оптимизации Марковица
+# PatchTST и ICEEMDAN для портфельной оптимизации Марковица
 
-**Сравнение методов прогнозирования доходности для портфельной оптимизации Марковица: Historical Mean, AutoARIMA, PatchTST Transformer**
+**Сравнение методов оценки ожидаемой доходности для портфельной оптимизации Марковица: историческое среднее, AutoARIMA, PatchTST и PatchTST поверх ICEEMDAN-декомпозиции**
 
-*Comparison of Return Forecasting Methods for Markowitz Portfolio Optimization: Historical Mean, AutoARIMA, PatchTST Transformer*
+*Comparison of Expected-Return Estimators for Markowitz Portfolio Optimization: Historical Mean, AutoARIMA, PatchTST, and PatchTST over ICEEMDAN Decomposition*
 
 **Автор:** Кротов Ю.В. (Iurii Krotov)
-**Дата:** Январь 2026 (January 2026)
+**Дата:** Июнь 2026 (June 2026)
 
 🇬🇧 **English version:** [README_EN.md](README_EN.md)
 
@@ -17,7 +17,7 @@
 # 1. Установка зависимостей
 pip install -r requirements.txt
 
-# 2. Запуск всех моделей
+# 2. Запуск всех моделей (интерактивно)
 python run_all.py
 ```
 
@@ -25,169 +25,182 @@ python run_all.py
 
 ---
 
-## Тема исследования
+## Тема и цель
 
-Применение модели PatchTST Self-Supervised для прогнозирования ожидаемых доходностей в задаче портфельной оптимизации по Марковицу.
-
-## Цель
-
-Эмпирически проверить гипотезу о том, что замена исторических средних на прогнозы модели PatchTST в качестве оценки ожидаемых доходностей улучшает качество портфеля Марковица.
+Эмпирическая проверка гипотезы: улучшает ли замена исторических средних на прогнозы трансформера PatchTST оценку ожидаемых доходностей μ в задаче портфельной оптимизации Марковица — и помогает ли предварительная сигнальная декомпозиция ряда (ICEEMDAN) раскрыть потенциал трансформера.
 
 ## Формальная постановка
 
-**Классическая задача Марковица** - максимизация коэффициента Шарпа:
+Решается классическая задача Марковица — максимизация коэффициента Шарпа касательного портфеля:
 
 ```
 max  (w'μ - r_f) / sqrt(w'Σw)
-s.t. Σw_i = 1, w_i >= 0
+s.t. Σ w_i = 1,  min_w ≤ w_i ≤ max_w  (long-only)
 ```
 
-где:
-- **w** — вектор весов активов
-- **μ** — вектор ожидаемых доходностей (в проекте сравниваются способы оценки)
-- **Σ** — ковариационная матрица доходностей
-- **r_f** — безрисковая ставка (берется из `config/config.yaml`)
+где **w** — веса активов, **μ** — вектор ожидаемых доходностей (в проекте сравниваются способы его оценки), **Σ** — ковариационная матрица (Ledoit–Wolf, **одинаковая для всех методов**), **r_f** — безрисковая ставка. Сравниваемые стратегии отличаются **только способом оценки μ** — всё остальное (окна, ковариация, ограничения, оптимизатор) идентично, поэтому сравнение честное.
 
-## Подходы к оценке μ
+## Сравниваемые подходы
 
-Все три метода используют одинаковые окна бэктеста:
-- Окно обучения: `backtest.train_window` (по умолчанию 1260 дней, 5 лет)
-- Горизонт прогноза: `backtest.test_window` (по умолчанию 21 день, 1 месяц)
-
-| Подход | Оценка μ | Описание |
-|--------|----------|----------|
+| Стратегия | Оценка μ | Описание |
+|---|---|---|
 | **Baseline 1** | mean(r) × 252 | Классический Марковиц (историческое среднее) |
-| **Baseline 2** | AutoARIMA.mean × 252 | StatsForecast AutoARIMA |
-| **PatchTST** | forecast(21).mean × 252 | Self-Supervised Transformer |
+| **Baseline 2** | AutoARIMA(21).mean × 252 | StatsForecast AutoARIMA |
+| **PatchTST** | forecast(21).mean × 252 | Self-Supervised трансформер на сыром ряде |
+| **PatchTST + ICEEMDAN** | forecast(21).mean × 252 | Тот же трансформер на компонентах декомпозиции |
+| **Equal Weight (1/N)** | — | Наивный бенчмарк: равные веса |
+| **Buy & Hold (SPY)** | — | Наивный бенчмарк: индекс S&P 500 |
 
-## PatchTST Self-Supervised
+**PatchTST + ICEEMDAN** — основной вклад работы. Train-окно каждого актива каузально (без заглядывания в будущее) раскладывается методом CEEMDAN/ICEEMDAN; переменное число IMF детерминированно группируется в 3 канала по среднему периоду — **шум** (< 5 дней), **цикл** (5–63 дня), **тренд** (> 63 дней + остаток). Каналы подаются как многоканальный вход в один PatchTST (channel-independence, общие веса), итоговый прогноз — сумма прогнозов каналов.
 
-**Источник:** https://github.com/yuqinie98/PatchTST
+## Методология оценки
 
-- Реализация: `src/models/patchtst_reference/`
-- Режимы `fast` / `full` настраиваются в `config/config.yaml`
-- Авто-выбор устройства: MPS (macOS) → CUDA → CPU
+- **Walk-forward бэктест:** окно обучения 1260 дней (5 лет), тест 21 день (1 месяц), сдвиг 21 день. Модели переобучаются на каждом шаге.
+- **Транзакционные издержки:** оборот считается против дрейфованных весов, по умолчанию 5 б.п. за единицу оборота. Метрики приводятся без издержек (gross) и с ними (net).
+- **Разделение для честной оценки гиперпараметров:** *validation* (тестовые месяцы ≤ 2014-12-31) — настройка; *holdout* (2015–2026) — финальная оценка вне периода настройки; *full* — весь период.
+- **Тест значимости:** разница коэффициентов Шарпа проверяется парным bootstrap (10 000 итераций).
 
 ## Данные
 
-- **Активы:** 20 акций из 10 секторов S&P 500 (задаются в `config/config.yaml`)
-- **Период:** 2010-01-01 — 2025-01-01
-- **Источник:** Yahoo Finance (Adjusted Close)
-- **Файлы:** `data/raw/prices.csv`, `data/raw/log_returns.csv`
+- **Активы:** 20 акций из 10 секторов S&P 500 (задаются в `config/config.yaml`).
+- **Период данных:** 2000-01-01 — 2026-01-15; бэктест покрывает ~2005–2026 (251 ребалансировка).
+- **Источник:** Yahoo Finance (Adjusted Close, учитывает дивиденды и сплиты).
+- **Файлы:** `data/raw/prices.csv`, `data/raw/log_returns.csv`, `data/raw/benchmark_log_returns.csv` (SPY).
+
+> ⚠️ Универсум из 20 ныне торгуемых компаний с полной историей с 2000 г. содержит **survivorship bias** — абсолютные доходности всех стратегий завышены. Это ограничение учитывается при интерпретации (см. [RESULTS.md](RESULTS.md)).
+
+---
+
+## Результаты (полный период, net, издержки 5 б.п.)
+
+| Метрика | Baseline 1 | AutoARIMA | PatchTST | **PatchTST+ICEEMDAN** | 1/N | SPY |
+|---|---|---|---|---|---|---|
+| Sharpe Ratio | 0.72 | 0.68 | 0.52 | **0.87** | 0.66 | 0.48 |
+| Calmar Ratio | 0.44 | 0.40 | 0.21 | **0.49** | 0.35 | 0.21 |
+| Max Drawdown | −33.3% | −35.9% | −53.8% | −34.9% | −37.4% | −50.2% |
+| Annual Return | 14.7% | 14.5% | 11.5% | **17.0%** | 13.1% | 10.8% |
+| Оборот/мес | 18% | 50% | 113% | 112% | 4% | 0% |
+
+**По периодам (Sharpe, net):**
+
+| Период | Baseline 1 | AutoARIMA | PatchTST | **ICEEMDAN** | 1/N | SPY |
+|---|---|---|---|---|---|---|
+| validation 2005–2015 | 0.68 | 0.73 | 0.31 | **0.86** | 0.56 | 0.29 |
+| **holdout 2015–2026** | 0.75 | 0.63 | 0.75 | **0.88** | 0.75 | 0.66 |
+| full 2005–2026 | 0.72 | 0.68 | 0.52 | **0.87** | 0.66 | 0.48 |
+
+![Сравнение кумулятивных доходностей](results/cumulative_returns_20260612_091600.png)
+
+### Ключевые выводы
+
+1. **Декомпозиция «спасает» трансформер.** Та же сеть даёт Sharpe 0.52 на сыром ряде и **0.87** на ICEEMDAN-компонентах. Разница статистически значима (bootstrap, p = 0.005) — это главный результат работы.
+2. **ICEEMDAN лучший по риск-скорректированной доходности на всех трёх периодах** (0.86 / 0.88 / 0.87) — преимущество устойчиво и вне периода настройки гиперпараметров.
+3. **Честная граница результата.** ICEEMDAN значимо превосходит наивные бенчмарки (1/N: p = 0.027; SPY: p = 0.004), но **статистически не отличим от простого Марковица на историческом среднем** (p = 0.127). Это согласуется с литературой о том, что простые бейзлайны крайне трудно уверенно обыграть (DeMiguel et al., 2009).
+4. **Точность прогноза ≠ качество портфеля.** У ICEEMDAN худшие RMSE и hit-rate, но лучший портфель: оптимизатору важна относительная структура μ между активами, а не точечная точность.
+5. **Ограничение — оборот.** ICEEMDAN перестраивает портфель на ~112%/мес. Преимущество над бейзлайном сохраняется до ~20–25 б.п. издержек и исчезает при 30+ б.п.
+
+Подробный разбор, тест значимости и анализ чувствительности к издержкам: **[RESULTS.md](RESULTS.md)**.
+
+---
 
 ## Конфигурация
 
-Все параметры проекта задаются в `config/config.yaml`:
-- `data` — тикеры и период данных
-- `backtest` — окна обучения и теста
-- `models` — настройки PatchTST и AutoARIMA (StatsForecast)
-- `optimization` — безрисковая ставка, метод ковариации, ограничения весов
-  - `covariance`: `sample` или `ledoit_wolf`
-  - `gross_exposure` используется только при `long_only=false`
+Все параметры — в `config/config.yaml`. Главные блоки:
 
-## Структура проекта
+- `data` — тикеры, период, тикер бенчмарка;
+- `backtest` — окна обучения/теста, `data_end` (обрезка периода для тюнинга);
+- `models.patchtst` — режим `fast`/`full`, `padding_patch`, `n_workers` (параллелизм по тикерам);
+- `models.iceemdan` — параметры CEEMDAN (`trials`, `epsilon`, `seed`), группировка IMF, флаг денойзинга, кэш;
+- `optimization` — безрисковая ставка, метод ковариации, ограничения весов;
+- `evaluation` — транзакционные издержки, граница validation/holdout.
 
-```
-patchtst-portfolio-optimization/
-├── run_all.py                    # Запуск всех моделей
-├── config/config.yaml            # Конфигурация эксперимента
-├── data/raw/                     # Данные (prices, log_returns)
-├── src/
-│   ├── data/                     # Загрузка и предобработка
-│   ├── models/
-│   │   ├── patchtst.py           # PatchTST Self-Supervised
-│   │   └── patchtst_reference/   # Reference реализация
-│   ├── optimization/
-│   │   ├── markowitz.py          # Оптимизатор Марковица
-│   │   └── covariance.py         # Оценка ковариации
-│   ├── backtesting/
-│   │   ├── backtest.py           # Baseline 1 (историческое среднее)
-│   │   ├── backtest_statsforecast.py  # Baseline 2 (AutoARIMA)
-│   │   └── backtest_patchtst.py  # PatchTST
-│   └── utils/
-│       └── forecast_metrics.py   # Метрики прогнозов
-├── notebooks/
-│   └── portfolio_comparison.py     # Standalone Python script
-├── results/                      # Результаты экспериментов
-├── LICENSE                       # MIT лицензия
-└── RESULTS.md                    # Результаты исследования
-```
+### Как изменить набор акций
 
-## Установка
+1. Откройте `config/config.yaml`, отредактируйте список `data.tickers` (тикеры Yahoo Finance). При необходимости измените `start_date`/`end_date` и `benchmark_ticker`.
+2. Перекачайте данные одним из способов:
+   ```bash
+   python src/data/downloader.py        # перезапишет data/raw/*.csv под новый список
+   ```
+   либо запустите `python run_all.py` и ответьте `y` на вопрос «Скачать данные заново?».
+3. Старый кэш декомпозиций (`data/cache/iceemdan/`) можно не чистить — ключ кэша включает значения окна, поэтому новые данные пересчитаются автоматически.
+
+> Ограничение: все тикеры должны иметь котировки на всём периоде — строки с пропусками удаляются целиком (выравнивание панели по общим торговым дням).
+
+---
+
+## Установка и запуск
 
 ```bash
 python3 -m pip install -r requirements.txt
 ```
 
-## Запуск
-
-### Полный запуск (интерактивно):
+### Полный запуск (интерактивно)
 
 ```bash
 python3 run_all.py
 ```
 
-Скрипт спросит:
-- нужно ли скачать данные
-- какие модели запускать
+Скрипт спросит, скачивать ли данные, и какие модели запускать (`Enter` = все четыре + бенчмарки). Весь вывод дублируется в `results/run_log_<timestamp>.txt`.
 
-### Фоновый запуск (для долгих задач):
+### Фоновый запуск (долгие прогоны)
 
-PatchTST может работать несколько часов. Чтобы процесс продолжал работать после закрытия терминала:
+Полный прогон PatchTST/ICEEMDAN занимает часы. Чтобы процесс пережил закрытие терминала и сон системы (на macOS):
 
 ```bash
-# Запуск в фоне (nohup игнорирует сигнал закрытия терминала)
-nohup python3 run_all.py > output.log 2>&1 &
+# macOS: caffeinate не даёт ноутбуку уснуть; держите крышку открытой
+nohup caffeinate -is bash -c 'printf "n\n\n" | python3 run_all.py' > run.log 2>&1 &
 
-# Просмотр прогресса в реальном времени
-tail -f output.log
-
-# Проверить, что процесс работает
-ps aux | grep run_all
+# Прогресс в реальном времени
+tail -f results/run_log_*.txt
 ```
 
-### Отдельные бэктесты:
+`printf "n\n\n"` отвечает «не качать данные» и «запустить все модели» на интерактивные вопросы.
+
+### Выбор отдельных стратегий
+
+В ответ на вопрос о моделях введите номера через запятую: `1` — Baseline 1, `2` — AutoARIMA, `3` — PatchTST, `4` — PatchTST + ICEEMDAN. Бенчмарки 1/N и SPY считаются всегда.
+
+### Отдельные бэктесты
 
 ```bash
-# Baseline 1: Историческое среднее
-python3 src/backtesting/backtest.py
-
-# Baseline 2: StatsForecast AutoARIMA
-python3 src/backtesting/backtest_statsforecast.py
-
-# PatchTST Self-Supervised
-python3 src/backtesting/backtest_patchtst.py
+python3 src/backtesting/backtest.py                  # Baseline 1
+python3 src/backtesting/backtest_statsforecast.py    # AutoARIMA
+python3 src/backtesting/backtest_patchtst.py         # PatchTST
+python3 src/backtesting/backtest_patchtst_iceemdan.py # PatchTST + ICEEMDAN
 ```
 
-## Результаты
+### Запуск на GPU (Google Colab)
 
-**PatchTST — лучший по управлению рисками** (минимальная просадка, высокий Calmar):
+Для машин без локального GPU есть ноутбук [notebooks/colab_run.ipynb](notebooks/colab_run.ipynb): загрузите архив проекта на Google Drive, выберите GPU-runtime и выполняйте ячейки. Ноутбук содержит бенчмарк скорости и предрасчёт декомпозиций. Примечание: на маленькой модели проекта Apple Silicon (MPS) может оказаться быстрее облачного L4 — см. бенчмарк-ячейку.
 
-| Метрика | Baseline 1 | StatsForecast | PatchTST | Лучший |
-|---------|------------|---------------|----------|--------|
-| Annual Return | **16.08%** | 13.26% | 14.07% | Baseline 1 |
-| Sharpe Ratio | **0.93** | 0.71 | 0.80 | Baseline 1 |
-| Calmar Ratio | 0.66 | 0.64 | **0.90** | PatchTST |
-| Max Drawdown | -24.22% | -20.72% | **-15.61%** | PatchTST |
+---
 
-![Сравнение кумулятивных доходностей](results/cumulative_returns_20260123_231803.png)
+## Структура проекта
 
-### Почему PatchTST имеет меньшую просадку?
+См. [PROJECT_STRUCTURE.md](PROJECT_STRUCTURE.md). Кратко:
 
-Анализ весов портфелей показал, что PatchTST:
-- **Снижает долю волатильных акций** (AAPL, MSFT, UNH) в периоды перед кризисами
-- **Увеличивает долю защитных активов** (CVX, PFE, PG, KO)
-- **Меняет веса в 1.69x чаще**, быстрее реагируя на рыночные условия
-
-Пример: в худший период (2022-04-08) PatchTST показал -8.40% против -10.98% у Baseline 1.
-
-**Подробный анализ:** [RESULTS.md](RESULTS.md)
+```
+├── run_all.py                          # Оркестратор: все стратегии + бенчмарки + издержки
+├── config/config.yaml                  # Вся конфигурация
+├── data/raw/                           # prices, log_returns, benchmark
+├── scripts/precompute_decompositions.py # Параллельный предрасчёт ICEEMDAN (CPU)
+├── notebooks/colab_run.ipynb           # Запуск на GPU в Colab
+├── src/
+│   ├── data/                           # Загрузка и предобработка
+│   ├── decomposition/iceemdan.py       # CEEMDAN/ICEEMDAN + группировка IMF + кэш
+│   ├── models/patchtst.py              # PatchTST (одно- и многоканальный) + reference/
+│   ├── optimization/                   # Марковиц (max Sharpe) + ковариация
+│   ├── backtesting/                    # 4 стратегии + benchmarks.py
+│   └── utils/                          # Метрики прогнозов и портфеля (turnover, издержки, сплит)
+└── results/                            # Результаты экспериментов
+```
 
 ## Лицензия
 
-MIT License. См. файл [LICENSE](LICENSE).
+MIT License. См. [LICENSE](LICENSE).
 
 ### Благодарности
 
 - [PatchTST](https://github.com/yuqinie98/PatchTST) — архитектура трансформера для временных рядов (Apache 2.0)
-- [StatsForecast](https://github.com/Nixtla/statsforecast) — AutoARIMA реализация
+- [PyEMD / EMD-signal](https://github.com/laszukdawid/PyEMD) — реализация CEEMDAN/ICEEMDAN
+- [StatsForecast](https://github.com/Nixtla/statsforecast) — AutoARIMA

@@ -406,6 +406,7 @@ class PatchTST_Official(nn.Module):
         pre_norm=False,      # Post-norm
         pe='zeros',          # Positional encoding type
         learn_pe=True,       # Learnable PE
+        padding_patch=True,  # ReplicationPad в конце окна (официальная реализация)
     ):
         super().__init__()
 
@@ -416,9 +417,15 @@ class PatchTST_Official(nn.Module):
         self.mask_ratio = mask_ratio
         self.use_revin = use_revin
         self.d_model = d_model
+        self.padding_patch = padding_patch
 
         # Число патчей
         self.num_patches = (input_len - patch_len) // stride + 1
+        if padding_patch:
+            # Паддинг повторением последнего значения: без него хвост окна
+            # (input_len - последний патч) не попадает в модель
+            self.padding_patch_layer = nn.ReplicationPad1d((0, stride))
+            self.num_patches += 1
 
         # RevIN
         if use_revin:
@@ -468,6 +475,9 @@ class PatchTST_Official(nn.Module):
         """
         batch_size = x.shape[0]
         patches = []
+
+        if self.padding_patch:
+            x = self.padding_patch_layer(x.unsqueeze(1)).squeeze(1)
 
         for i in range(self.num_patches):
             start = i * self.stride
@@ -570,10 +580,9 @@ class PatchTST_Official(nn.Module):
         # Prediction head
         prediction = self.prediction_head(encoded)
 
-        # RevIN денормализация
+        # RevIN денормализация (инвертирует affine, как в официальной реализации)
         if self.use_revin and hasattr(self.revin, 'std'):
-            # std и mean имеют форму (batch, 1, 1)
-            prediction = prediction * self.revin.std.squeeze(-1) + self.revin.mean.squeeze(-1)
+            prediction = self.revin(prediction.unsqueeze(-1), 'denorm').squeeze(-1)
 
         return prediction
 
@@ -683,6 +692,294 @@ def forecast_patchtst(model, last_input):
         pred = model(x, mode='predict')
 
     return pred.cpu().numpy().flatten()
+
+
+# ============================================================
+# PatchTST MultiChannel (для компонент декомпозиции ICEEMDAN)
+# ============================================================
+
+class PatchTST_MultiChannel(nn.Module):
+    """
+    Многоканальный PatchTST с channel-independence и общими весами
+    (как в официальной реализации: каналы проходят через общий энкодер
+    независимо, батч расширяется до B*C).
+
+    Используется для прогноза компонент декомпозиции (noise/cycle/trend):
+    вход (batch, n_channels, input_len), выход (batch, n_channels, pred_len).
+
+    RevIN — per-channel (num_features=n_channels), денормализация корректно
+    инвертирует affine-преобразование через RevIN(mode='denorm').
+    """
+
+    def __init__(
+        self,
+        n_channels=3,
+        input_len=252,
+        pred_len=21,
+        patch_len=16,
+        stride=8,
+        d_model=128,
+        n_heads=16,
+        n_layers=3,
+        d_ff=256,
+        dropout=0.2,
+        attn_dropout=0.,
+        mask_ratio=0.4,
+        use_revin=True,
+        norm='BatchNorm',
+        res_attention=True,
+        pre_norm=False,
+        pe='zeros',
+        learn_pe=True,
+        padding_patch=True,
+    ):
+        super().__init__()
+
+        self.n_channels = n_channels
+        self.input_len = input_len
+        self.pred_len = pred_len
+        self.patch_len = patch_len
+        self.stride = stride
+        self.mask_ratio = mask_ratio
+        self.use_revin = use_revin
+        self.d_model = d_model
+        self.padding_patch = padding_patch
+
+        self.num_patches = (input_len - patch_len) // stride + 1
+        if padding_patch:
+            self.padding_patch_layer = nn.ReplicationPad1d((0, stride))
+            self.num_patches += 1
+
+        if use_revin:
+            self.revin = RevIN(n_channels, affine=True)
+
+        self.patch_embedding = nn.Linear(patch_len, d_model)
+        self.W_pos = positional_encoding(pe, learn_pe, self.num_patches, d_model)
+        self.dropout = nn.Dropout(dropout)
+
+        self.encoder = TSTEncoder(
+            d_model=d_model,
+            n_heads=n_heads,
+            d_ff=d_ff,
+            norm=norm,
+            attn_dropout=attn_dropout,
+            dropout=dropout,
+            activation='gelu',
+            res_attention=res_attention,
+            pre_norm=pre_norm,
+            n_layers=n_layers
+        )
+
+        self.pretrain_head = PretrainHead(d_model, patch_len, dropout)
+        self.prediction_head = PredictionHead(d_model, self.num_patches, pred_len, dropout)
+
+        self.mask_token = nn.Parameter(torch.zeros(1, 1, d_model))
+        nn.init.normal_(self.mask_token, std=0.02)
+
+    def create_patches(self, x):
+        """
+        x: (batch*n_channels, input_len)
+        Returns: (batch*n_channels, num_patches, patch_len)
+        """
+        patches = []
+
+        if self.padding_patch:
+            x = self.padding_patch_layer(x.unsqueeze(1)).squeeze(1)
+
+        for i in range(self.num_patches):
+            start = i * self.stride
+            end = start + self.patch_len
+            patches.append(x[:, start:end])
+
+        return torch.stack(patches, dim=1)
+
+    def random_masking(self, batch_size, device):
+        """Случайная маска патчей: (batch*n_channels, num_patches), True = замаскирован."""
+        num_mask = int(self.num_patches * self.mask_ratio)
+
+        noise = torch.rand(batch_size, self.num_patches, device=device)
+        ids_shuffle = torch.argsort(noise, dim=1)
+        ids_restore = torch.argsort(ids_shuffle, dim=1)
+
+        mask = torch.zeros(batch_size, self.num_patches, device=device)
+        mask[:, :num_mask] = 1
+        return torch.gather(mask, dim=1, index=ids_restore).bool()
+
+    def forward_encoder(self, x, mask=None):
+        """
+        x: (batch, n_channels, input_len)
+        Returns:
+            encoded: (batch*n_channels, num_patches, d_model)
+            patches: нормализованные патчи (batch*n_channels, num_patches, patch_len)
+        """
+        batch_size = x.shape[0]
+
+        # RevIN per-channel: (B, C, L) -> (B, L, C) -> norm -> обратно
+        if self.use_revin:
+            x = x.permute(0, 2, 1)
+            x = self.revin(x, 'norm')
+            x = x.permute(0, 2, 1)
+
+        # Channel-independence: каналы как независимые элементы батча
+        x = x.reshape(batch_size * self.n_channels, self.input_len)
+
+        patches = self.create_patches(x)          # (B*C, P, patch_len)
+        x = self.patch_embedding(patches)          # (B*C, P, d_model)
+
+        if mask is not None:
+            mask_tokens = self.mask_token.expand(x.shape[0], self.num_patches, -1)
+            x = torch.where(mask.unsqueeze(-1), mask_tokens, x)
+
+        x = self.dropout(x + self.W_pos)
+        x = self.encoder(x)
+
+        return x, patches
+
+    def forward_pretrain(self, x):
+        """Self-supervised pre-training: MSE на замаскированных патчах."""
+        mask = self.random_masking(x.shape[0] * self.n_channels, x.device)
+
+        encoded, original_patches = self.forward_encoder(x, mask)
+        pred_patches = self.pretrain_head(encoded)
+
+        loss = F.mse_loss(pred_patches[mask], original_patches[mask])
+        return loss, pred_patches, mask
+
+    def forward_predict(self, x):
+        """
+        x: (batch, n_channels, input_len)
+        Returns: (batch, n_channels, pred_len)
+        """
+        batch_size = x.shape[0]
+
+        encoded, _ = self.forward_encoder(x, mask=None)
+        prediction = self.prediction_head(encoded)             # (B*C, pred_len)
+        prediction = prediction.reshape(batch_size, self.n_channels, self.pred_len)
+
+        # RevIN денормализация с инверсией affine: (B, C, T) -> (B, T, C) -> обратно
+        if self.use_revin:
+            prediction = prediction.permute(0, 2, 1)
+            prediction = self.revin(prediction, 'denorm')
+            prediction = prediction.permute(0, 2, 1)
+
+        return prediction
+
+    def forward(self, x, mode='predict'):
+        """
+        x: (batch, n_channels, input_len)
+        mode: 'pretrain' или 'predict'
+        """
+        if mode == 'pretrain':
+            return self.forward_pretrain(x)
+        return self.forward_predict(x)
+
+
+def create_sequences_mc(components, input_len, pred_len):
+    """
+    Скользящие supervised-пары для многоканального ряда.
+
+    Args:
+        components: (n_channels, T)
+    Returns:
+        X: (N, n_channels, input_len), y: (N, n_channels, pred_len)
+    """
+    T = components.shape[1]
+    X, y = [], []
+    for i in range(T - input_len - pred_len + 1):
+        X.append(components[:, i:i + input_len])
+        y.append(components[:, i + input_len:i + input_len + pred_len])
+    return np.array(X), np.array(y)
+
+
+def pretrain_patchtst_mc(model, components, epochs=10, lr=0.0001, batch_size=64, verbose=False):
+    """Self-Supervised pre-training многоканальной модели (components: (n_channels, T))."""
+    device = next(model.parameters()).device
+    model.train()
+
+    input_len = model.input_len
+    T = components.shape[1]
+    step = 5
+    X_train = []
+    for i in range(0, T - input_len + 1, step):
+        X_train.append(components[:, i:i + input_len])
+
+    if len(X_train) == 0:
+        X_train = [components[:, -input_len:]]
+
+    X_tensor = torch.FloatTensor(np.array(X_train)).to(device)
+
+    dataset = torch.utils.data.TensorDataset(X_tensor)
+    loader = torch.utils.data.DataLoader(dataset, batch_size=batch_size, shuffle=True)
+
+    optimizer = torch.optim.AdamW(model.parameters(), lr=lr, weight_decay=0.01)
+    scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max=epochs)
+
+    for epoch in range(epochs):
+        total_loss = 0
+        for (batch,) in loader:
+            optimizer.zero_grad()
+            loss, _, _ = model(batch, mode='pretrain')
+            loss.backward()
+            torch.nn.utils.clip_grad_norm_(model.parameters(), 1.0)
+            optimizer.step()
+            total_loss += loss.item()
+
+        scheduler.step()
+
+        if verbose and (epoch + 1) % 5 == 0:
+            print(f"  Pretrain Epoch {epoch+1}/{epochs}, Loss: {total_loss/len(loader):.6f}")
+
+    return model
+
+
+def finetune_patchtst_mc(model, X_train, y_train, epochs=5, lr=0.00005, batch_size=64, verbose=False):
+    """Fine-tuning end-to-end: MSE по всем каналам."""
+    device = next(model.parameters()).device
+    model.train()
+
+    X_tensor = torch.FloatTensor(X_train).to(device)
+    y_tensor = torch.FloatTensor(y_train).to(device)
+
+    dataset = torch.utils.data.TensorDataset(X_tensor, y_tensor)
+    loader = torch.utils.data.DataLoader(dataset, batch_size=batch_size, shuffle=True)
+
+    optimizer = torch.optim.AdamW(model.parameters(), lr=lr, weight_decay=0.01)
+    criterion = nn.MSELoss()
+
+    for epoch in range(epochs):
+        total_loss = 0
+        for X_batch, y_batch in loader:
+            optimizer.zero_grad()
+            pred = model(X_batch, mode='predict')
+            loss = criterion(pred, y_batch)
+            loss.backward()
+            torch.nn.utils.clip_grad_norm_(model.parameters(), 1.0)
+            optimizer.step()
+            total_loss += loss.item()
+
+        if verbose and (epoch + 1) % 5 == 0:
+            print(f"  Finetune Epoch {epoch+1}/{epochs}, Loss: {total_loss/len(loader):.6f}")
+
+    return model
+
+
+def forecast_patchtst_mc(model, last_input):
+    """
+    Прогноз многоканальной модели.
+
+    Args:
+        last_input: (n_channels, input_len)
+    Returns:
+        (n_channels, pred_len)
+    """
+    device = next(model.parameters()).device
+    model.eval()
+
+    with torch.no_grad():
+        x = torch.FloatTensor(last_input).unsqueeze(0).to(device)
+        pred = model(x, mode='predict')
+
+    return pred.cpu().numpy()[0]
 
 
 # Алиас для совместимости

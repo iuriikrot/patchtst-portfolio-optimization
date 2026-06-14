@@ -1,13 +1,15 @@
 """
-Бэктест с PatchTST Self-Supervised для оценки μ.
+Бэктест PatchTST + ICEEMDAN: прогноз μ по компонентам декомпозиции.
 
-Подход:
-1. Pre-training на 5-летнем окне (1260 дней) с маскированием патчей
-2. Прогноз на 21 день вперёд
-3. μ = mean(forecast) × 252 (годовая доходность)
-4. Оптимизация портфеля по Марковицу
+Подход (отличия от backtest_patchtst.py):
+1. Train-окно (1260 дней) каждого тикера каузально раскладывается CEEMDAN
+   (только train — тестовые данные в декомпозицию не попадают)
+2. IMF группируются в 3 фиксированных канала: noise / cycle / trend
+3. Каналы прогнозируются одной многоканальной PatchTST (общие веса,
+   channel-independence), прогноз ряда = сумма прогнозов каналов
+4. μ = mean(прогноз) × 252, дальше Марковиц — как у остальных стратегий
 
-Согласовано с Baseline 1 и Baseline 2 по входным данным (1260 дней).
+Архитектура сети и схема pretrain+finetune наследуются из models.patchtst.{mode}.
 """
 
 import pandas as pd
@@ -26,45 +28,29 @@ sys.path.append(str(Path(__file__).parent.parent))
 from optimization.markowitz import maximize_sharpe
 from optimization.covariance import compute_covariance
 from utils.portfolio_metrics import calculate_metrics
+from decomposition.iceemdan import decompose_and_group
 from models.patchtst import (
-    PatchTST_SelfSupervised,
-    pretrain_patchtst,
-    finetune_patchtst,
-    forecast_patchtst,
-    create_sequences
+    PatchTST_MultiChannel,
+    pretrain_patchtst_mc,
+    finetune_patchtst_mc,
+    forecast_patchtst_mc,
+    create_sequences_mc
 )
+from backtesting.backtest_patchtst import set_seed, select_device, task_seed
 
 import torch
-import random
-
-
-def set_seed(seed: int):
-    """Установка seed для воспроизводимости результатов."""
-    random.seed(seed)
-    np.random.seed(seed)
-    torch.manual_seed(seed)
-    if torch.cuda.is_available():
-        torch.cuda.manual_seed(seed)
-        torch.cuda.manual_seed_all(seed)
-    if torch.backends.mps.is_available():
-        torch.mps.manual_seed(seed)
-    torch.backends.cudnn.deterministic = True
-    torch.backends.cudnn.benchmark = False
-
 
 # Загружаем конфигурацию
 config_path = Path(__file__).parent.parent.parent / "config" / "config.yaml"
 with open(config_path, 'r') as f:
     config = yaml.safe_load(f)
 
-# Воспроизводимость: seed устанавливается в начале run_backtest,
-# а не при импорте — иначе результат зависит от порядка импортов/запусков
 RANDOM_SEED = config.get('random_seed', 42)
 
 # Параметры бэктеста из config
-TRAIN_WINDOW = config['backtest']['train_window']  # 1260 дней (5 лет)
-TEST_WINDOW = config['backtest']['test_window']    # 21 день (1 месяц)
-RF = config['optimization']['risk_free_rate']      # 0.02
+TRAIN_WINDOW = config['backtest']['train_window']
+TEST_WINDOW = config['backtest']['test_window']
+RF = config['optimization']['risk_free_rate']
 CV_METHOD = config['optimization'].get('covariance', 'sample')
 CONSTRAINTS = config.get('optimization', {}).get('constraints', {})
 MIN_WEIGHT = CONSTRAINTS.get('min_weight', 0.0)
@@ -73,12 +59,10 @@ LONG_ONLY = CONSTRAINTS.get('long_only', True)
 FULLY_INVESTED = CONSTRAINTS.get('fully_invested', True)
 GROSS_EXPOSURE = CONSTRAINTS.get('gross_exposure')
 
-# Режим PatchTST из config: 'fast' или 'full'
+# Архитектура PatchTST — те же параметры, что у основной PatchTST-стратегии
 MODE = config['models']['patchtst'].get('mode', 'fast')
 PADDING_PATCH = config['models']['patchtst'].get('padding_patch', True)
 N_WORKERS = config['models']['patchtst'].get('n_workers', 1)
-
-# Загружаем параметры для выбранного режима
 mode_config = config['models']['patchtst'][MODE]
 
 INPUT_LEN = mode_config['input_length']
@@ -93,38 +77,38 @@ DROPOUT = mode_config['dropout']
 USE_REVIN = mode_config['use_revin']
 MASK_RATIO = mode_config['mask_ratio']
 PRETRAIN_EPOCHS = mode_config['pretrain_epochs']
-FINETUNE_EPOCHS = mode_config.get('finetune_epochs', 5)  # Fine-tuning epochs из config
+FINETUNE_EPOCHS = mode_config.get('finetune_epochs', 5)
 PRETRAIN_LR = mode_config['pretrain_lr']
 BATCH_SIZE = mode_config['batch_size']
 
+# Параметры декомпозиции
+ICEEMDAN_CFG = config['models'].get('iceemdan', {})
+FORECAST_NOISE = ICEEMDAN_CFG.get('forecast_noise', True)
+_cache_cfg = ICEEMDAN_CFG.get('cache', {})
+if _cache_cfg.get('enabled', True):
+    CACHE_DIR = Path(__file__).parent.parent.parent / _cache_cfg.get('dir', 'data/cache/iceemdan')
+else:
+    CACHE_DIR = None
 
-def select_device():
-    if torch.backends.mps.is_available():
-        return 'mps'
-    if torch.cuda.is_available():
-        return 'cuda'
-    return 'cpu'
+N_CHANNELS = 3  # noise / cycle / trend
 
 
 # ============================================================
-# Параллелизм по тикерам: 20 моделей в окне независимы,
-# поэтому обучаются пулом процессов на CPU-ядрах
+# Параллелизм по тикерам (декомпозиция + обучение в воркерах)
 # ============================================================
-
-def task_seed(base_seed, window_key, ticker_idx):
-    """Детерминированный seed пары (окно, тикер): результат не зависит
-    от порядка выполнения задач и числа воркеров."""
-    return (base_seed * 1_000_003 + window_key * 100 + ticker_idx) % (2 ** 31 - 1)
-
 
 def _worker_init():
-    # По одному BLAS-потоку на воркер, иначе процессы душат друг друга
     torch.set_num_threads(1)
 
 
-def _train_and_forecast(series, device, verbose=False):
-    """Полный цикл одного тикера: pretrain + finetune + прогноз."""
-    model = PatchTST_SelfSupervised(
+def _train_and_forecast_components(components, device, verbose=False):
+    """Полный цикл одного тикера: модель по 3 каналам, прогноз = сумма каналов."""
+    # Каналы, тождественно равные нулю в train (пустая группа IMF),
+    # не прогнозируются моделью
+    zero_channels = [c for c in range(N_CHANNELS) if np.allclose(components[c], 0)]
+
+    model = PatchTST_MultiChannel(
+        n_channels=N_CHANNELS,
         input_len=INPUT_LEN,
         pred_len=PRED_LEN,
         patch_len=PATCH_LEN,
@@ -139,17 +123,19 @@ def _train_and_forecast(series, device, verbose=False):
         padding_patch=PADDING_PATCH
     ).to(device)
 
-    model = pretrain_patchtst(
-        model, series,
+    # Pre-training с маскированием патчей (на компонентах)
+    model = pretrain_patchtst_mc(
+        model, components,
         epochs=PRETRAIN_EPOCHS,
         lr=PRETRAIN_LR,
         batch_size=BATCH_SIZE,
         verbose=verbose
     )
 
-    X_train, y_train = create_sequences(series, INPUT_LEN, PRED_LEN)
+    # Fine-tuning end-to-end на supervised-парах компонент
+    X_train, y_train = create_sequences_mc(components, INPUT_LEN, PRED_LEN)
     if len(X_train) > 0:
-        model = finetune_patchtst(
+        model = finetune_patchtst_mc(
             model, X_train, y_train,
             epochs=FINETUNE_EPOCHS,
             lr=PRETRAIN_LR * 0.1,
@@ -157,14 +143,31 @@ def _train_and_forecast(series, device, verbose=False):
             verbose=verbose
         )
 
-    return forecast_patchtst(model, series[-INPUT_LEN:])
+    # Прогноз компонент по последним INPUT_LEN точкам
+    last_input = components[:, -INPUT_LEN:]
+    comp_forecast = forecast_patchtst_mc(model, last_input)  # (3, pred_len)
+
+    for c in zero_channels:
+        comp_forecast[c] = 0.0
+    if not FORECAST_NOISE:
+        # Денойзинг: высокочастотная компонента в прогнозе обнуляется
+        comp_forecast[0] = 0.0
+
+    return comp_forecast.sum(axis=0)
 
 
 def _forecast_ticker_worker(args):
-    """Задача воркера: обучение и прогноз одного тикера (в отдельном процессе)."""
-    series, seed = args
+    """Задача воркера: каузальная декомпозиция + обучение + прогноз одного тикера."""
+    series, seed, device = args
+    try:
+        components = decompose_and_group(series, ICEEMDAN_CFG, cache_dir=CACHE_DIR)
+    except ImportError:
+        # Отсутствие зависимости — не per-ticker сбой, валим прогон целиком
+        raise
+    except Exception as e:
+        return {'forecast': None, 'error': str(e)}
     set_seed(seed)
-    return _train_and_forecast(series, 'cpu')
+    return {'forecast': _train_and_forecast_components(components, device), 'error': None}
 
 
 _POOL = None
@@ -186,14 +189,10 @@ def close_pool():
         _POOL = None
 
 
-def forecast_returns_patchtst(train_returns, horizon=21, verbose=False, return_raw=False):
+def forecast_returns_patchtst_iceemdan(train_returns, horizon=21, verbose=False, return_raw=False):
     """
-    Прогноз доходностей для всех акций с помощью PatchTST Self-Supervised.
-
-    Для каждой акции:
-    1. Pre-train модель на 5-летних данных (маскирование патчей)
-    2. Прогноз на 21 день
-    3. μ = mean(forecast) × 252
+    Прогноз доходностей всех акций: ICEEMDAN-декомпозиция train-окна +
+    многоканальный PatchTST по компонентам.
 
     Args:
         train_returns: DataFrame с доходностями (train период, 1260 дней)
@@ -205,7 +204,6 @@ def forecast_returns_patchtst(train_returns, horizon=21, verbose=False, return_r
         mu: вектор ожидаемых годовых доходностей
         raw_forecasts: DataFrame (horizon × N_tickers) — если return_raw=True
     """
-    # Проверка согласованности horizon и PRED_LEN из config
     if horizon != PRED_LEN:
         warnings.warn(
             f"horizon ({horizon}) != PRED_LEN ({PRED_LEN}) из config. "
@@ -214,46 +212,63 @@ def forecast_returns_patchtst(train_returns, horizon=21, verbose=False, return_r
 
     tickers = train_returns.columns
     fallback = train_returns.mean()
+    window_end = train_returns.index[-1].date()
     # Ключ окна для посидовых сидов: дата конца train-окна
     window_key = int(train_returns.index[-1].strftime('%Y%m%d'))
 
-    # Собираем raw прогнозы для всех тикеров
     raw_forecasts = pd.DataFrame(index=range(horizon), columns=tickers, dtype=float)
+    fallback_count = 0
 
     # Тикеры с достаточной историей — в задачи, остальные — fallback
     tasks = []
     for idx, ticker in enumerate(tickers):
         series = train_returns[ticker].values
         if len(series) < INPUT_LEN:
-            # Мало данных — берём историческое среднее (константа на все дни)
             raw_forecasts[ticker] = fallback[ticker]
+            fallback_count += 1
             continue
         tasks.append((ticker, series, task_seed(RANDOM_SEED, window_key, idx)))
 
     if N_WORKERS > 1:
         pool = _get_pool()
-        forecasts = pool.map(
+        outcomes = pool.map(
             _forecast_ticker_worker,
-            [(series, seed) for _, series, seed in tasks]
+            [(series, seed, 'cpu') for _, series, seed in tasks]
         )
     else:
         device = select_device()
-        forecasts = []
-        for _, series, seed in tasks:
-            set_seed(seed)
-            forecasts.append(_train_and_forecast(series, device, verbose))
+        outcomes = [
+            _forecast_ticker_worker((series, seed, device))
+            for _, series, seed in tasks
+        ]
 
-    for (ticker, _, _), forecast in zip(tasks, forecasts):
-        # Сохраняем raw прогноз (все horizon дней)
+    for (ticker, _, _), outcome in zip(tasks, outcomes):
+        if outcome['error'] is not None:
+            warnings.warn(
+                f"Декомпозиция для {ticker} (окно до {window_end}) не удалась "
+                f"({outcome['error']}). Используется fallback (историческое среднее)."
+            )
+            raw_forecasts[ticker] = fallback[ticker]
+            fallback_count += 1
+            continue
+
+        forecast = outcome['forecast']
         if len(forecast) == horizon:
             raw_forecasts[ticker] = forecast
         else:
-            # Fallback если прогноз другой длины (возможная ошибка конфигурации)
             warnings.warn(
                 f"Прогноз для {ticker}: len={len(forecast)}, ожидалось horizon={horizon}. "
                 f"Используется fallback (историческое среднее)."
             )
             raw_forecasts[ticker] = fallback[ticker]
+            fallback_count += 1
+
+    if fallback_count == len(tickers):
+        # 100% fallback'ов = стратегия молча выродилась бы в Baseline 1
+        raise RuntimeError(
+            f"Все {len(tickers)} тикеров ушли в fallback (окно до {window_end}) — "
+            f"декомпозиция/прогноз не работают, результат был бы дубликатом Baseline 1."
+        )
 
     # mu = среднее по дням × 252
     mu = raw_forecasts.mean(axis=0).values * 252
@@ -265,11 +280,7 @@ def forecast_returns_patchtst(train_returns, horizon=21, verbose=False, return_r
 
 def run_backtest(returns, save_weights_path=None, collect_forecasts=False):
     """
-    Бэктест со скользящим окном.
-
-    Использует те же параметры что и Baseline 1 и 2:
-    - TRAIN_WINDOW = 1260 дней (5 лет)
-    - TEST_WINDOW = 21 день (1 месяц)
+    Бэктест со скользящим окном (та же сетка, что у остальных стратегий).
 
     Args:
         returns: DataFrame с лог-доходностями
@@ -296,12 +307,15 @@ def run_backtest(returns, save_weights_path=None, collect_forecasts=False):
     print(f"Train окно: {TRAIN_WINDOW} дней")
     print(f"Test окно: {TEST_WINDOW} дней")
     print(f"Акций: {len(returns.columns)}")
-    print(f"PatchTST параметры:")
+    print(f"PatchTST+ICEEMDAN параметры:")
+    print(f"  - каналы: noise/cycle/trend, forecast_noise: {FORECAST_NOISE}")
+    print(f"  - ICEEMDAN: trials={ICEEMDAN_CFG.get('trials')}, epsilon={ICEEMDAN_CFG.get('epsilon')}, "
+          f"группировка: <{ICEEMDAN_CFG.get('grouping', {}).get('noise_max_period')} / "
+          f"<={ICEEMDAN_CFG.get('grouping', {}).get('cycle_max_period')} дней")
+    print(f"  - кэш декомпозиций: {CACHE_DIR}")
     print(f"  - input_len: {INPUT_LEN}, pred_len: {PRED_LEN}")
-    print(f"  - patch_len: {PATCH_LEN}, stride: {STRIDE}")
+    print(f"  - patch_len: {PATCH_LEN}, stride: {STRIDE}, padding_patch: {PADDING_PATCH}")
     print(f"  - d_model: {D_MODEL}, n_heads: {N_HEADS}, n_layers: {N_LAYERS}, d_ff: {D_FF}")
-    print(f"  - dropout: {DROPOUT}, use_revin: {USE_REVIN}")
-    print(f"  - mask_ratio: {MASK_RATIO}")
     print(f"  - pretrain_epochs: {PRETRAIN_EPOCHS}, finetune_epochs: {FINETUNE_EPOCHS}")
     print(f"  - pretrain_lr: {PRETRAIN_LR}, batch_size: {BATCH_SIZE}")
     print("\nЗапуск бэктеста...\n")
@@ -316,26 +330,23 @@ def run_backtest(returns, save_weights_path=None, collect_forecasts=False):
 
         step += 1
 
-        # μ из PatchTST прогнозов
+        # μ из прогнозов PatchTST+ICEEMDAN
         if collect_forecasts:
-            mu, raw_forecasts = forecast_returns_patchtst(
+            mu, raw_forecasts = forecast_returns_patchtst_iceemdan(
                 train_data, horizon=TEST_WINDOW, verbose=False, return_raw=True
             )
-            # Actual = сумма дневных доходностей за месяц
             actual_monthly = test_data.sum(axis=0)
-            # Predicted = сумма прогнозов за месяц
             predicted_monthly = raw_forecasts.sum(axis=0)
-            # Собираем записи для каждого тикера
             for ticker in returns.columns:
                 forecast_records.append({
                     'date': test_data.index[0],
                     'ticker': ticker,
                     'actual': actual_monthly[ticker],
                     'predicted': predicted_monthly[ticker],
-                    'model': 'PatchTST'
+                    'model': 'PatchTST-ICEEMDAN'
                 })
         else:
-            mu = forecast_returns_patchtst(train_data, horizon=TEST_WINDOW, verbose=False)
+            mu = forecast_returns_patchtst_iceemdan(train_data, horizon=TEST_WINDOW, verbose=False)
 
         # Σ — ковариация (годовая)
         cov = compute_covariance(train_data, method=CV_METHOD, annualize=252)
@@ -366,7 +377,6 @@ def run_backtest(returns, save_weights_path=None, collect_forecasts=False):
 
         if step % 5 == 0 or step == 1:
             pct = step * 100 // total_steps
-            # Топ-3 актива с наибольшими весами
             top_idx = weights.argsort()[-3:][::-1]
             top_weights = [(returns.columns[i], weights[i]) for i in top_idx]
             top_str = ", ".join([f"{ticker}:{w:.1%}" for ticker, w in top_weights])
@@ -395,32 +405,30 @@ if __name__ == "__main__":
     # Загружаем данные
     data_path = Path(__file__).parent.parent.parent / "data" / "raw" / "log_returns.csv"
     returns = pd.read_csv(data_path, index_col=0, parse_dates=True)
+
     data_end = config['backtest'].get('data_end')
     if data_end:
         returns = returns.loc[:data_end]
-        print(f"Данные обрезаны по backtest.data_end = {data_end}")
 
-    print("="*60)
-    print("БЭКТЕСТ: PatchTST Self-Supervised")
-    print("="*60)
+    print("=" * 60)
+    print("БЭКТЕСТ: PatchTST + ICEEMDAN")
+    print("=" * 60)
     print(f"Данные: {returns.index[0].date()} — {returns.index[-1].date()}")
     print()
 
     results_path = Path(__file__).parent.parent.parent / "results"
     results_path.mkdir(exist_ok=True)
 
-    # Бэктест
     portfolio_returns = run_backtest(
         returns,
-        save_weights_path=results_path / "patchtst_weights.csv"
+        save_weights_path=results_path / "patchtst_iceemdan_weights.csv"
     )
 
-    # Метрики
     metrics = calculate_metrics(portfolio_returns, rf=RF)
 
-    print("\n" + "="*60)
-    print("РЕЗУЛЬТАТЫ: PatchTST Self-Supervised")
-    print("="*60)
+    print("\n" + "=" * 60)
+    print("РЕЗУЛЬТАТЫ: PatchTST + ICEEMDAN")
+    print("=" * 60)
     for name, value in metrics.items():
         if 'Return' in name or 'Volatility' in name or 'Drawdown' in name:
             print(f"{name}: {value:.2%}")
@@ -429,6 +437,5 @@ if __name__ == "__main__":
         else:
             print(f"{name}: {value}")
 
-    # Сохраняем результаты
-    portfolio_returns.to_csv(results_path / "patchtst_returns.csv")
-    print(f"\nРезультаты сохранены в {results_path / 'patchtst_returns.csv'}")
+    portfolio_returns.to_csv(results_path / "patchtst_iceemdan_returns.csv")
+    print(f"\nРезультаты сохранены в {results_path / 'patchtst_iceemdan_returns.csv'}")

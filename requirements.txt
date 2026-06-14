@@ -5,24 +5,19 @@ numpy>=1.24.0
 
 # ML/DL
 torch>=2.0.0
-pytorch-lightning>=2.0.0
 
 # Time Series
-statsforecast>=1.6.0    # AutoARIMA
+statsforecast>=1.6.0    # AutoARIMA (Baseline 2)
+EMD-signal>=1.6.0       # CEEMDAN/ICEEMDAN декомпозиция (PyEMD)
 
 # Optimization
-scipy>=1.10.0
-cvxpy>=1.4.0
+scipy>=1.10.0           # SLSQP-оптимизатор Марковица
+
+# Covariance
+scikit-learn>=1.3.0     # Ledoit-Wolf shrinkage
 
 # Visualization
 matplotlib>=3.7.0
-seaborn>=0.12.0
-plotly>=5.15.0
 
-# Utils
+# Config
 pyyaml>=6.0
-tqdm>=4.65.0
-scikit-learn>=1.3.0
-
-# Testing
-pytest>=7.4.0
