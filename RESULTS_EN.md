@@ -94,21 +94,36 @@ Notes:
 
 ## 5. Statistical Significance Test
 
-Sharpe-ratio differences were tested via paired bootstrap (10,000 iterations; H₀: Sharpe(ICEEMDAN) ≤ Sharpe(X)).
+Sharpe-ratio differences were tested using the **Ledoit–Wolf (2008)** method "Robust performance hypothesis testing with the Sharpe ratio" — appropriate for financial series with autocorrelation and non-normality. Applied: (a) an analytical test with a HAC-robust (Newey–West) standard error via the delta method and Sharpe influence functions; (b) a studentized stationary block bootstrap (Politis–Romano, expected block length 6 mo, 10,000 replications) — the primary, most reliable finite-sample variant; (c) a **Holm** correction over the 5 comparisons. The hypothesis is one-sided, H₁: Sharpe(ICEEMDAN) > Sharpe(X). Implementation: `scripts/significance_analysis.py` (correctness verified analytically and by numerical calibration).
 
-**Full period (251 months):**
+**Full period (251 months), net:**
 
-| ICEEMDAN vs | ΔSharpe | p-value | Significance |
-|---|---|---|---|
-| PatchTST (raw) | +0.35 | 0.005 | significant (1%) |
-| SPY Buy & Hold | +0.39 | 0.004 | significant (1%) |
-| Equal Weight (1/N) | +0.21 | 0.027 | significant (5%) |
-| AutoARIMA | +0.19 | 0.094 | marginal (10%) |
-| **Baseline 1 (hist. mean)** | +0.15 | 0.127 | **not significant** |
+| ICEEMDAN vs | ΔSharpe | HAC z | p (HAC) | p (bootstrap) | p (Holm) | Verdict |
+|---|---|---|---|---|---|---|
+| SPY Buy & Hold | +0.39 | 3.06 | 0.001 | 0.000 | 0.001 | significant (1%) |
+| Equal Weight (1/N) | +0.21 | 2.26 | 0.012 | 0.006 | 0.022 | significant (5%) |
+| PatchTST (raw) | +0.35 | 2.48 | 0.007 | 0.011 | 0.034 | significant (5%) |
+| AutoARIMA | +0.19 | 1.52 | 0.065 | 0.044 | 0.088 | marginal (10%) |
+| **Baseline 1 (hist. mean)** | +0.15 | 1.24 | 0.107 | 0.084 | 0.088 | marginal (10%) |
 
-**Holdout (131 months):** on the holdout period alone, due to the smaller sample and the "easy" market, no difference reaches significance (p = 0.23–0.28 against the nearest competitors).
+The HAC check showed that the long-run variance of the Sharpe difference is **lower** than the i.i.d. estimate (0.305 vs 0.352), i.e. there is mild negative autocorrelation in the series, so a naive i.i.d. bootstrap would be slightly conservative here — the rigorous test yields somewhat smaller p-values than the simplified one.
 
-**Conclusion.** Two facts are statistically robust: (1) decomposition significantly improves the transformer (ICEEMDAN ≫ PatchTST), and (2) ICEEMDAN significantly beats the naive benchmarks. However, ICEEMDAN does **not** statistically beat plain historical-mean Markowitz — it is consistently ahead numerically, but the difference is within statistical noise.
+**Holdout (131 months):** on the holdout period alone, due to the smaller sample and the "easy" market, no difference reaches 5% significance.
+
+**Conclusion.** After multiple-comparison correction, ICEEMDAN **significantly** (1–5%) beats the raw PatchTST transformer and the naive benchmarks 1/N and SPY. Against the two strongest baselines (AutoARIMA and historical-mean Markowitz), superiority is **marginally significant at the 10% level** (p ≈ 0.088) but does not reach the conventional 5%. The numerical edge is robust, but claiming superiority over the strongest baseline at 5% on this sample is not warranted — consistent with the literature on the difficulty of beating simple rules (DeMiguel et al., 2009).
+
+### Confidence Intervals (block-bootstrap, 95%)
+
+| Strategy | Sharpe | 95% CI Sharpe | Calmar | 95% CI Calmar |
+|---|---|---|---|---|
+| **ICEEMDAN** | 0.87 | [0.46, 1.35] | 0.49 | [0.26, 1.47] |
+| Baseline 1 | 0.72 | [0.33, 1.22] | 0.44 | [0.21, 1.13] |
+| AutoARIMA | 0.68 | [0.30, 1.17] | 0.40 | [0.19, 1.01] |
+| 1/N | 0.66 | [0.29, 1.14] | 0.35 | [0.17, 1.19] |
+| PatchTST | 0.52 | [0.07, 1.06] | 0.21 | [0.05, 0.93] |
+| SPY | 0.48 | [0.07, 0.97] | 0.21 | [0.05, 0.81] |
+
+ICEEMDAN's Sharpe CI [0.46, 1.35] and Baseline 1's [0.33, 1.22] overlap substantially — consistent with the marginal (rather than strong) significance of their difference under the more powerful paired test.
 
 ---
 
@@ -141,9 +156,9 @@ The raw PatchTST on daily returns is one of the worst strategies (Sharpe 0.52 fu
 
 ICEEMDAN is the best by Sharpe on validation (0.86), holdout (0.88), and the full period (0.87). Consistency across non-overlapping periods is the main evidence that the advantage is not an artifact of hyperparameter tuning.
 
-### 7.3. Honest boundary: we did not statistically beat plain Markowitz
+### 7.3. Honest boundary: only marginal significance over the strongest baseline
 
-ICEEMDAN significantly beats the naive benchmarks (1/N, SPY) and the raw transformer, but is **statistically indistinguishable** from classical historical-mean Markowitz (p = 0.127). This matches the literature (DeMiguel, Garlappi, Uppal, 2009: simple allocation rules are very hard to beat reliably). The numerical edge is real and robust, but claiming statistical superiority over the strongest baseline on this sample would be incorrect.
+After multiple-comparison correction ICEEMDAN significantly (1–5%) beats the naive benchmarks (1/N, SPY) and the raw transformer. Against historical-mean Markowitz and AutoARIMA, superiority is **marginally significant at the 10% level** (Holm-p ≈ 0.088) but does not reach 5%. This matches the literature (DeMiguel, Garlappi, Uppal, 2009: simple allocation rules are very hard to beat reliably). The numerical edge is real and robust across all periods, but strict superiority over the strongest baseline at the 5% level cannot be claimed on this sample.
 
 ### 7.4. Forecast accuracy does not determine portfolio quality
 

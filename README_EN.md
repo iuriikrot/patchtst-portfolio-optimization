@@ -93,7 +93,7 @@ where **w** — asset weights, **μ** — expected-return vector (the project co
 
 1. **Decomposition "rescues" the transformer.** The same network yields Sharpe 0.52 on the raw series and **0.87** on ICEEMDAN components. The difference is statistically significant (bootstrap, p = 0.005) — the project's main result.
 2. **ICEEMDAN is best on a risk-adjusted basis across all three periods** (0.86 / 0.88 / 0.87) — the advantage is robust and holds out-of-tuning.
-3. **Honest boundary of the result.** ICEEMDAN significantly beats the naive benchmarks (1/N: p = 0.027; SPY: p = 0.004), but is **statistically indistinguishable from plain historical-mean Markowitz** (p = 0.127). This matches the literature finding that simple baselines are very hard to beat reliably (DeMiguel et al., 2009).
+3. **Honest boundary of the result.** Under the rigorous Ledoit–Wolf test (HAC + studentized bootstrap, Holm correction) ICEEMDAN significantly beats the naive benchmarks (1/N, SPY) and the raw transformer, but over historical-mean Markowitz its superiority is only **marginally significant (10%, Holm-p ≈ 0.088)**, not reaching 5%. This matches the literature finding that simple baselines are very hard to beat reliably (DeMiguel et al., 2009).
 4. **Forecast accuracy ≠ portfolio quality.** ICEEMDAN has the worst RMSE and hit-rate yet the best portfolio: the optimizer cares about the relative structure of μ across assets, not point accuracy.
 5. **Limitation — turnover.** ICEEMDAN rebalances ~112%/month. Its edge over the baseline survives up to ~20–25 bps of costs and disappears beyond 30 bps.
 
